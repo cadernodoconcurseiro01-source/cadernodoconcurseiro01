@@ -2,15 +2,71 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Navigation } from "@/components/Navigation";
-import Index from "./pages/Index";
-import Pomodoro from "./pages/Pomodoro";
-import Subjects from "./pages/Subjects";
-import Flashcards from "./pages/Flashcards";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { NavigationNew } from "@/components/NavigationNew";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
+import PomodoroPage from "./pages/PomodoroNew";
+import SubjectsPage from "./pages/SubjectsNew";
+import FlashcardsPage from "./pages/FlashcardsNew";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+function AppRoutes() {
+  const { user, loading } = useAuth();
+
+  // Redirect authenticated users away from auth page
+  if (!loading && user && window.location.pathname === '/auth') {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {user && <NavigationNew />}
+      <main>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pomodoro" 
+            element={
+              <ProtectedRoute>
+                <PomodoroPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/subjects" 
+            element={
+              <ProtectedRoute>
+                <SubjectsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/flashcards" 
+            element={
+              <ProtectedRoute>
+                <FlashcardsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -18,18 +74,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-background">
-          <Navigation />
-          <main>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/pomodoro" element={<Pomodoro />} />
-              <Route path="/subjects" element={<Subjects />} />
-              <Route path="/flashcards" element={<Flashcards />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

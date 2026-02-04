@@ -1,0 +1,79 @@
+// Database types matching the Supabase schema
+export type DifficultyLevel = 'low' | 'medium' | 'high';
+
+export interface Profile {
+  id: string;
+  user_id: string;
+  display_name: string | null;
+  daily_study_hours: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Subject {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  difficulty: DifficultyLevel;
+  total_minutes: number;
+  goal_minutes: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudySession {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  start_time: string;
+  end_time: string | null;
+  duration: number;
+  type: 'pomodoro' | 'free' | 'flashcard';
+  created_at: string;
+}
+
+export interface Flashcard {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  front: string;
+  back: string;
+  next_review: string;
+  interval: number;
+  ease_factor: number;
+  repetitions: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudyCycle {
+  id: string;
+  user_id: string;
+  subjects_per_day: number;
+  daily_hours: number;
+  current_day: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TimerSettings {
+  id: string;
+  user_id: string;
+  focus_duration: number;
+  short_break_duration: number;
+  long_break_duration: number;
+  sessions_until_long_break: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Study schedule generated from cycle
+export interface StudyScheduleItem {
+  subjectId: string;
+  subjectName: string;
+  color: string;
+  difficulty: DifficultyLevel;
+  durationMinutes: number;
+  period: 'morning' | 'afternoon' | 'evening';
+}
