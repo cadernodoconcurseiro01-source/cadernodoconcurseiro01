@@ -14,7 +14,223 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      flashcards: {
+        Row: {
+          back: string
+          created_at: string
+          ease_factor: number
+          front: string
+          id: string
+          interval: number
+          next_review: string
+          repetitions: number
+          subject_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          back: string
+          created_at?: string
+          ease_factor?: number
+          front: string
+          id?: string
+          interval?: number
+          next_review?: string
+          repetitions?: number
+          subject_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          back?: string
+          created_at?: string
+          ease_factor?: number
+          front?: string
+          id?: string
+          interval?: number
+          next_review?: string
+          repetitions?: number
+          subject_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          daily_study_hours: number | null
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_study_hours?: number | null
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_study_hours?: number | null
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_cycles: {
+        Row: {
+          created_at: string
+          current_day: number
+          daily_hours: number
+          id: string
+          subjects_per_day: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_day?: number
+          daily_hours?: number
+          id?: string
+          subjects_per_day?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_day?: number
+          daily_hours?: number
+          id?: string
+          subjects_per_day?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          created_at: string
+          duration: number
+          end_time: string | null
+          id: string
+          start_time: string
+          subject_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration: number
+          end_time?: string | null
+          id?: string
+          start_time: string
+          subject_id: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number
+          end_time?: string | null
+          id?: string
+          start_time?: string
+          subject_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          color: string
+          created_at: string
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          goal_minutes: number
+          id: string
+          name: string
+          total_minutes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          goal_minutes?: number
+          id?: string
+          name: string
+          total_minutes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          goal_minutes?: number
+          id?: string
+          name?: string
+          total_minutes?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      timer_settings: {
+        Row: {
+          created_at: string
+          focus_duration: number
+          id: string
+          long_break_duration: number
+          sessions_until_long_break: number
+          short_break_duration: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          focus_duration?: number
+          id?: string
+          long_break_duration?: number
+          sessions_until_long_break?: number
+          short_break_duration?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          focus_duration?: number
+          id?: string
+          long_break_duration?: number
+          sessions_until_long_break?: number
+          short_break_duration?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +239,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      difficulty_level: "low" | "medium" | "high"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +366,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      difficulty_level: ["low", "medium", "high"],
+    },
   },
 } as const
