@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Timer, BookOpen, Layers, GraduationCap, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, Timer, BookOpen, Layers, GraduationCap, LogOut, User, Trophy, FileText, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,9 @@ const navItems = [
   { path: '/pomodoro', label: 'Pomodoro', icon: Timer },
   { path: '/subjects', label: 'Matérias', icon: BookOpen },
   { path: '/flashcards', label: 'Flashcards', icon: Layers },
+  { path: '/contests', label: 'Concursos', icon: Trophy },
+  { path: '/simulados', label: 'Simulados', icon: FileText },
+  { path: '/statistics', label: 'Estatísticas', icon: BarChart3 },
 ];
 
 export function NavigationNew() {
@@ -31,7 +34,7 @@ export function NavigationNew() {
               <GraduationCap className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-lg hidden sm:block">
-              StudyFlow
+              Caderno do Concurseiro
             </span>
           </Link>
 

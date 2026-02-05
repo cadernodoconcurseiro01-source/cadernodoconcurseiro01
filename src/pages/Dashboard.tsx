@@ -1,5 +1,7 @@
-import { Clock, Target, Flame, Layers, BookOpen, Calendar } from 'lucide-react';
+import { Clock, Target, Flame, Layers, BookOpen, Calendar, BarChart3, Trophy } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { StatsCard } from '@/components/StatsCard';
+import { Button } from '@/components/ui/button';
 import { PomodoroTimerNew } from '@/components/PomodoroTimerNew';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
 import { SubjectProgressNew } from '@/components/SubjectProgressNew';
@@ -75,9 +77,25 @@ const Dashboard = () => {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
       <header className="mb-8 animate-fade-in">
-        <h1 className="font-display text-3xl font-bold mb-2">
-          Olá{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''}! 👋
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-3xl font-bold mb-2">
+            Olá{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''}! 👋
+          </h1>
+          <div className="flex items-center gap-2">
+            <Link to="/contests">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Trophy className="w-4 h-4" />
+                Concursos
+              </Button>
+            </Link>
+            <Link to="/statistics">
+              <Button variant="outline" size="sm" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Estatísticas
+              </Button>
+            </Link>
+          </div>
+        </div>
         <p className="text-muted-foreground">
           Continue focado nos seus estudos. Você está indo muito bem!
         </p>

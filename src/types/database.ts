@@ -18,6 +18,7 @@ export interface Subject {
   difficulty: DifficultyLevel;
   total_minutes: number;
   goal_minutes: number;
+  contest_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +54,8 @@ export interface StudyCycle {
   subjects_per_day: number;
   daily_hours: number;
   current_day: number;
+  cycle_days: number;
+  plan_type: 'cycle' | 'injected';
   created_at: string;
   updated_at: string;
 }
@@ -76,4 +79,41 @@ export interface StudyScheduleItem {
   difficulty: DifficultyLevel;
   durationMinutes: number;
   period: 'morning' | 'afternoon' | 'evening';
+}
+
+export interface Contest {
+  id: string;
+  user_id: string;
+  name: string;
+  exam_date: string | null;
+  study_plan_type: 'cycle' | 'injected';
+  cycle_days: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Simulado {
+  id: string;
+  user_id: string;
+  contest_id: string | null;
+  name: string;
+  exam_date: string;
+  total_questions: number;
+  correct_answers: number;
+  wrong_answers: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DailyQuestion {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  question_date: string;
+  total_questions: number;
+  correct_answers: number;
+  wrong_answers: number;
+  created_at: string;
+  updated_at: string;
 }

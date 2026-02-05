@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { StudyScheduleItem, StudyCycle } from '@/types/database';
-import { Settings2, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Calendar, RefreshCw } from 'lucide-react';
+import { Settings2, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Calendar, RefreshCw, Layers } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -97,6 +98,31 @@ export function StudyCycleCard({ schedule, cycle, onUpdateCycle, onRefreshSchedu
                 <DialogTitle className="font-display">Configurar Ciclo</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Tipo de Plano</Label>
+                  <Select 
+                    value={localCycle.plan_type} 
+                    onValueChange={(v: 'cycle' | 'injected') => setLocalCycle({ ...localCycle, plan_type: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cycle">Ciclo de Estudos (Rotativo)</SelectItem>
+                      <SelectItem value="injected">Plano Injetado (Fixo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Dias do {localCycle.plan_type === 'cycle' ? 'Ciclo' : 'Plano'}</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={localCycle.cycle_days}
+                    onChange={(e) => setLocalCycle({ ...localCycle, cycle_days: Number(e.target.value) })}
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label>Matérias por dia</Label>
                   <Input

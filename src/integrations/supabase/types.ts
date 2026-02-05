@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      contests: {
+        Row: {
+          created_at: string
+          cycle_days: number
+          exam_date: string | null
+          id: string
+          is_active: boolean
+          name: string
+          study_plan_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_days?: number
+          exam_date?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          study_plan_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_days?: number
+          exam_date?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          study_plan_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_questions: {
+        Row: {
+          correct_answers: number
+          created_at: string
+          id: string
+          question_date: string
+          subject_id: string
+          total_questions: number
+          updated_at: string
+          user_id: string
+          wrong_answers: number
+        }
+        Insert: {
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          question_date?: string
+          subject_id: string
+          total_questions?: number
+          updated_at?: string
+          user_id: string
+          wrong_answers?: number
+        }
+        Update: {
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          question_date?: string
+          subject_id?: string
+          total_questions?: number
+          updated_at?: string
+          user_id?: string
+          wrong_answers?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_questions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcards: {
         Row: {
           back: string
@@ -91,12 +171,61 @@ export type Database = {
         }
         Relationships: []
       }
+      simulados: {
+        Row: {
+          contest_id: string | null
+          correct_answers: number
+          created_at: string
+          exam_date: string
+          id: string
+          name: string
+          total_questions: number
+          updated_at: string
+          user_id: string
+          wrong_answers: number
+        }
+        Insert: {
+          contest_id?: string | null
+          correct_answers?: number
+          created_at?: string
+          exam_date?: string
+          id?: string
+          name: string
+          total_questions?: number
+          updated_at?: string
+          user_id: string
+          wrong_answers?: number
+        }
+        Update: {
+          contest_id?: string | null
+          correct_answers?: number
+          created_at?: string
+          exam_date?: string
+          id?: string
+          name?: string
+          total_questions?: number
+          updated_at?: string
+          user_id?: string
+          wrong_answers?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulados_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_cycles: {
         Row: {
           created_at: string
           current_day: number
+          cycle_days: number
           daily_hours: number
           id: string
+          plan_type: string
           subjects_per_day: number
           updated_at: string
           user_id: string
@@ -104,8 +233,10 @@ export type Database = {
         Insert: {
           created_at?: string
           current_day?: number
+          cycle_days?: number
           daily_hours?: number
           id?: string
+          plan_type?: string
           subjects_per_day?: number
           updated_at?: string
           user_id: string
@@ -113,8 +244,10 @@ export type Database = {
         Update: {
           created_at?: string
           current_day?: number
+          cycle_days?: number
           daily_hours?: number
           id?: string
+          plan_type?: string
           subjects_per_day?: number
           updated_at?: string
           user_id?: string
@@ -165,6 +298,7 @@ export type Database = {
       subjects: {
         Row: {
           color: string
+          contest_id: string | null
           created_at: string
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           goal_minutes: number
@@ -176,6 +310,7 @@ export type Database = {
         }
         Insert: {
           color?: string
+          contest_id?: string | null
           created_at?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
           goal_minutes?: number
@@ -187,6 +322,7 @@ export type Database = {
         }
         Update: {
           color?: string
+          contest_id?: string | null
           created_at?: string
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
           goal_minutes?: number
@@ -196,7 +332,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subjects_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       timer_settings: {
         Row: {

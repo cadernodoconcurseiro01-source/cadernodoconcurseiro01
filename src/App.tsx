@@ -10,6 +10,9 @@ import Dashboard from "./pages/Dashboard";
 import PomodoroPage from "./pages/PomodoroNew";
 import SubjectsPage from "./pages/SubjectsNew";
 import FlashcardsPage from "./pages/FlashcardsNew";
+import ContestsPage from "./pages/Contests";
+import SimuladosPage from "./pages/Simulados";
+import StatisticsPage from "./pages/Statistics";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -58,6 +61,30 @@ function AppRoutes() {
             element={
               <ProtectedRoute>
                 <FlashcardsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/contests" 
+            element={
+              <ProtectedRoute>
+                <ContestsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/simulados" 
+            element={
+              <ProtectedRoute>
+                <SimuladosPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/statistics" 
+            element={
+              <ProtectedRoute>
+                <StatisticsPage />
               </ProtectedRoute>
             } 
           />

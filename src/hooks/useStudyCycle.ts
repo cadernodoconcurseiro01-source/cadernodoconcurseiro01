@@ -7,6 +7,8 @@ const defaultCycle: Omit<StudyCycle, 'id' | 'user_id' | 'created_at' | 'updated_
   subjects_per_day: 4,
   daily_hours: 4,
   current_day: 0,
+  cycle_days: 7,
+  plan_type: 'cycle',
 };
 
 // Algorithm to generate study schedule based on difficulty rules:
