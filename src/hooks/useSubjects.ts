@@ -63,6 +63,49 @@ export function useSubjects() {
     },
   });
 
+  const addSubjectWithContest = useMutation({
+    mutationFn: async ({ 
+      name, 
+      color, 
+      goalMinutes, 
+      difficulty,
+      contestId
+    }: { 
+      name: string; 
+      color: string; 
+      goalMinutes: number; 
+      difficulty: DifficultyLevel;
+      contestId?: string | null;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data, error } = await supabase
+        .from('subjects')
+        .insert({
+          user_id: user.id,
+          name,
+          color,
+          goal_minutes: goalMinutes,
+          difficulty,
+          contest_id: contestId || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      toast.success('Matéria adicionada!');
+    },
+    onError: (error) => {
+      toast.error('Erro ao adicionar matéria');
+      console.error(error);
+    },
+  });
+
   const updateSubject = useMutation({
     mutationFn: async ({ 
       id, 
@@ -121,6 +164,7 @@ export function useSubjects() {
     subjects,
     isLoading,
     addSubject: addSubject.mutate,
+    addSubjectWithContest: addSubjectWithContest.mutate,
     updateSubject: updateSubject.mutate,
     deleteSubject: deleteSubject.mutate,
   };

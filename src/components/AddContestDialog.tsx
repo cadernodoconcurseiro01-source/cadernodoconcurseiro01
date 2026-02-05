@@ -1,0 +1,140 @@
+ import { useState } from 'react';
+ import { Button } from '@/components/ui/button';
+ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+ import { Input } from '@/components/ui/input';
+ import { Label } from '@/components/ui/label';
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+ import { Plus, Trophy } from 'lucide-react';
+ import { Contest } from '@/types/database';
+ 
+ interface AddContestDialogProps {
+   onAdd: (contest: Omit<Contest, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+   editingContest?: Contest | null;
+   onUpdate?: (contest: Partial<Contest> & { id: string }) => void;
+   open?: boolean;
+   onOpenChange?: (open: boolean) => void;
+ }
+ 
+ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpenChange }: AddContestDialogProps) {
+   const [internalOpen, setInternalOpen] = useState(false);
+   const [name, setName] = useState(editingContest?.name || '');
+   const [examDate, setExamDate] = useState(editingContest?.exam_date || '');
+   const [studyPlanType, setStudyPlanType] = useState<'cycle' | 'injected'>(editingContest?.study_plan_type || 'cycle');
+   const [cycleDays, setCycleDays] = useState(editingContest?.cycle_days || 7);
+ 
+   const isControlled = open !== undefined;
+   const isOpen = isControlled ? open : internalOpen;
+   const setIsOpen = isControlled ? onOpenChange! : setInternalOpen;
+ 
+   const handleSubmit = (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!name.trim()) return;
+ 
+     const contestData = {
+       name: name.trim(),
+       exam_date: examDate || null,
+       study_plan_type: studyPlanType,
+       cycle_days: cycleDays,
+       is_active: true,
+     };
+ 
+     if (editingContest && onUpdate) {
+       onUpdate({ id: editingContest.id, ...contestData });
+     } else {
+       onAdd(contestData);
+     }
+ 
+     resetForm();
+     setIsOpen(false);
+   };
+ 
+   const resetForm = () => {
+     if (!editingContest) {
+       setName('');
+       setExamDate('');
+       setStudyPlanType('cycle');
+       setCycleDays(7);
+     }
+   };
+ 
+   return (
+     <Dialog open={isOpen} onOpenChange={setIsOpen}>
+       {!editingContest && (
+         <DialogTrigger asChild>
+           <Button size="sm" className="gradient-primary gap-1">
+             <Plus className="w-4 h-4" />
+             Novo Concurso
+           </Button>
+         </DialogTrigger>
+       )}
+       <DialogContent className="sm:max-w-md">
+         <DialogHeader>
+           <DialogTitle className="font-display flex items-center gap-2">
+             <Trophy className="w-5 h-5 text-primary" />
+             {editingContest ? 'Editar Concurso' : 'Novo Concurso'}
+           </DialogTitle>
+         </DialogHeader>
+         <form onSubmit={handleSubmit} className="space-y-4 py-4">
+           <div className="space-y-2">
+             <Label htmlFor="name">Nome do Concurso</Label>
+             <Input
+               id="name"
+               placeholder="Ex: Concurso TRF 2025"
+               value={name}
+               onChange={(e) => setName(e.target.value)}
+               required
+             />
+           </div>
+ 
+           <div className="space-y-2">
+             <Label htmlFor="examDate">Data da Prova (opcional)</Label>
+             <Input
+               id="examDate"
+               type="date"
+               value={examDate}
+               onChange={(e) => setExamDate(e.target.value)}
+             />
+           </div>
+ 
+           <div className="space-y-2">
+             <Label>Tipo de Plano de Estudos</Label>
+             <Select value={studyPlanType} onValueChange={(v: 'cycle' | 'injected') => setStudyPlanType(v)}>
+               <SelectTrigger>
+                 <SelectValue />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="cycle">Ciclo de Estudos (Não Injetado)</SelectItem>
+                 <SelectItem value="injected">Plano de Estudos Injetado</SelectItem>
+               </SelectContent>
+             </Select>
+             <p className="text-xs text-muted-foreground">
+               {studyPlanType === 'cycle' 
+                 ? 'O ciclo repete as matérias de forma rotativa.'
+                 : 'O plano distribui as matérias em dias fixos.'
+               }
+             </p>
+           </div>
+ 
+           <div className="space-y-2">
+             <Label htmlFor="cycleDays">Dias do {studyPlanType === 'cycle' ? 'Ciclo' : 'Plano'}</Label>
+             <Input
+               id="cycleDays"
+               type="number"
+               min={1}
+               max={30}
+               value={cycleDays}
+               onChange={(e) => setCycleDays(Number(e.target.value))}
+             />
+             <p className="text-xs text-muted-foreground">
+               Quantos dias dura um {studyPlanType === 'cycle' ? 'ciclo completo' : 'plano completo'}
+             </p>
+           </div>
+ 
+           <Button type="submit" className="w-full gradient-primary">
+             {editingContest ? 'Salvar Alterações' : 'Cadastrar Concurso'}
+           </Button>
+         </form>
+       </DialogContent>
+     </Dialog>
+   );
+ }
