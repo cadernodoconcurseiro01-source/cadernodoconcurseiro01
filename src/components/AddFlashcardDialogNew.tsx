@@ -1,32 +1,41 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { Subject } from '@/types/database';
+import { Subject, FlashcardDeck } from '@/types/database';
 
 interface AddFlashcardDialogNewProps {
   subjects: Subject[];
-  onAdd: (params: { subjectId: string; front: string; back: string }) => void;
+  decks?: FlashcardDeck[];
+  onAdd: (params: { subjectId: string; front: string; back: string; deckId?: string }) => void;
 }
 
-export function AddFlashcardDialogNew({ subjects, onAdd }: AddFlashcardDialogNewProps) {
+export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashcardDialogNewProps) {
   const [open, setOpen] = useState(false);
   const [subjectId, setSubjectId] = useState(subjects[0]?.id || '');
+  const [deckId, setDeckId] = useState('');
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
+
+  const filteredDecks = decks.filter(d => d.subject_id === subjectId);
+
+  const handleSubjectChange = (value: string) => {
+    setSubjectId(value);
+    setDeckId(''); // Reset deck when subject changes
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!front.trim() || !back.trim() || !subjectId) return;
 
-    onAdd({ subjectId, front, back });
+    onAdd({ subjectId, front, back, deckId: deckId || undefined });
     setOpen(false);
     setFront('');
     setBack('');
+    setDeckId('');
   };
 
   return (
@@ -44,7 +53,7 @@ export function AddFlashcardDialogNew({ subjects, onAdd }: AddFlashcardDialogNew
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label>Matéria</Label>
-            <Select value={subjectId} onValueChange={setSubjectId}>
+            <Select value={subjectId} onValueChange={handleSubjectChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a matéria" />
               </SelectTrigger>
@@ -63,6 +72,25 @@ export function AddFlashcardDialogNew({ subjects, onAdd }: AddFlashcardDialogNew
               </SelectContent>
             </Select>
           </div>
+
+          {filteredDecks.length > 0 && (
+            <div className="space-y-2">
+              <Label>Baralho (opcional)</Label>
+              <Select value={deckId} onValueChange={setDeckId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um baralho" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sem baralho</SelectItem>
+                  {filteredDecks.map((deck) => (
+                    <SelectItem key={deck.id} value={deck.id}>
+                      {deck.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="front">Frente (Pergunta)</Label>

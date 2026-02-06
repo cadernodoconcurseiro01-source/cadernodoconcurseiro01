@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Timer, BookOpen, Layers, GraduationCap, LogOut, User, Trophy, FileText, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Timer, BookOpen, Layers, LogOut, User, Trophy, FileText, BarChart3, HelpCircle, Book } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import logo from '@/assets/logo.png';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -11,8 +13,10 @@ const navItems = [
   { path: '/subjects', label: 'Matérias', icon: BookOpen },
   { path: '/flashcards', label: 'Flashcards', icon: Layers },
   { path: '/contests', label: 'Concursos', icon: Trophy },
+  { path: '/questions', label: 'Questões', icon: HelpCircle },
   { path: '/simulados', label: 'Simulados', icon: FileText },
   { path: '/statistics', label: 'Estatísticas', icon: BarChart3 },
+  { path: '/verse', label: 'Versículo', icon: Book },
 ];
 
 export function NavigationNew() {
@@ -24,22 +28,25 @@ export function NavigationNew() {
     await signOut();
   };
 
+  const getInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
+  };
+
   return (
     <nav className="sticky top-0 z-50 glass border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center shadow-soft transition-transform group-hover:scale-105">
-              <GraduationCap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-display font-bold text-lg hidden sm:block">
-              Caderno do Concurseiro
-            </span>
+            <img 
+              src={logo} 
+              alt="Caderno do Concurseiro 01" 
+              className="h-10 transition-transform group-hover:scale-105"
+            />
           </Link>
 
           {/* Nav Links */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto">
             {navItems.map(({ path, label, icon: Icon }) => {
               const isActive = location.pathname === path;
               
@@ -48,14 +55,14 @@ export function NavigationNew() {
                   key={path}
                   to={path}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
                     isActive 
                       ? "bg-primary text-primary-foreground shadow-soft" 
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="hidden md:inline">{label}</span>
+                  <span className="hidden lg:inline">{label}</span>
                 </Link>
               );
             })}
@@ -66,13 +73,24 @@ export function NavigationNew() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <User className="w-5 h-5" />
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="text-xs">
+                      {getInitials(user.email || 'US')}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem disabled className="text-xs text-muted-foreground">
                   {user.email}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <User className="w-4 h-4 mr-2" />
+                  Meu Perfil
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                   <LogOut className="w-4 h-4 mr-2" />
                   Sair

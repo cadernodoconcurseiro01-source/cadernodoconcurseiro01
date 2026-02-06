@@ -82,11 +82,13 @@ export function useFlashcards() {
     mutationFn: async ({ 
       subjectId, 
       front, 
-      back 
+      back,
+      deckId
     }: { 
       subjectId: string; 
       front: string; 
       back: string;
+      deckId?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
@@ -96,6 +98,7 @@ export function useFlashcards() {
         .insert({
           user_id: user.id,
           subject_id: subjectId,
+          deck_id: deckId || null,
           front,
           back,
           next_review: new Date().toISOString(),
@@ -184,15 +187,17 @@ export function useFlashcards() {
     mutationFn: async ({ 
       id, 
       front, 
-      back 
+      back,
+      deckId
     }: { 
       id: string; 
       front: string; 
       back: string;
+      deckId?: string | null;
     }) => {
       const { data, error } = await supabase
         .from('flashcards')
-        .update({ front, back })
+        .update({ front, back, deck_id: deckId })
         .eq('id', id)
         .select()
         .single();
@@ -210,6 +215,14 @@ export function useFlashcards() {
     },
   });
 
+  const getBySubject = (subjectId: string) => {
+    return flashcards.filter(f => f.subject_id === subjectId);
+  };
+
+  const getByDeck = (deckId: string) => {
+    return flashcards.filter(f => f.deck_id === deckId);
+  };
+
   return {
     flashcards,
     flashcardsDueToday,
@@ -218,5 +231,7 @@ export function useFlashcards() {
     reviewFlashcard: reviewFlashcard.mutate,
     deleteFlashcard: deleteFlashcard.mutate,
     updateFlashcard: updateFlashcard.mutate,
+    getBySubject,
+    getByDeck,
   };
 }

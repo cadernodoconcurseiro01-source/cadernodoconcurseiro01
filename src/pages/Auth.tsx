@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, Eye, EyeOff, GraduationCap } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import logo from '@/assets/logo.png';
 
 const authSchema = z.object({
   email: z.string().email('Email inválido').max(255, 'Email muito longo'),
@@ -77,10 +78,11 @@ const Auth = () => {
       <Card className="w-full max-w-md p-8 shadow-elevated animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-soft">
-            <GraduationCap className="w-9 h-9 text-primary-foreground" />
-          </div>
-          <h1 className="font-display text-2xl font-bold">StudyFlow</h1>
+          <img 
+            src={logo} 
+            alt="Caderno do Concurseiro 01" 
+            className="h-20 mx-auto mb-4"
+          />
           <p className="text-muted-foreground text-sm mt-1">
             Organize seus estudos de forma inteligente
           </p>

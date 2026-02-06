@@ -11,8 +11,11 @@ import PomodoroPage from "./pages/PomodoroNew";
 import SubjectsPage from "./pages/SubjectsNew";
 import FlashcardsPage from "./pages/FlashcardsNew";
 import ContestsPage from "./pages/Contests";
+import QuestionsPage from "./pages/Questions";
 import SimuladosPage from "./pages/Simulados";
 import StatisticsPage from "./pages/Statistics";
+import VersePage from "./pages/Verse";
+import ProfilePage from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -73,6 +76,14 @@ function AppRoutes() {
             } 
           />
           <Route 
+            path="/questions" 
+            element={
+              <ProtectedRoute>
+                <QuestionsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/simulados" 
             element={
               <ProtectedRoute>
@@ -85,6 +96,22 @@ function AppRoutes() {
             element={
               <ProtectedRoute>
                 <StatisticsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/verse" 
+            element={
+              <ProtectedRoute>
+                <VersePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             } 
           />

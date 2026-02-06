@@ -1,15 +1,21 @@
 import { useState } from 'react';
-import { Layers, BookOpen, Clock, Trash2, Pencil } from 'lucide-react';
+import { Layers, BookOpen, Clock, Trash2, Pencil, FolderPlus, ChevronRight, ChevronDown, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FlashcardReviewNew } from '@/components/FlashcardReviewNew';
 import { AddFlashcardDialogNew } from '@/components/AddFlashcardDialogNew';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useFlashcards } from '@/hooks/useFlashcards';
+import { useFlashcardDecks } from '@/hooks/useFlashcardDecks';
 import { useSessions } from '@/hooks/useSessions';
 import { cn } from '@/lib/utils';
-import { useState as useSessionStartTime } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const FlashcardsPage = () => {
   const { subjects } = useSubjects();
@@ -18,16 +24,31 @@ const FlashcardsPage = () => {
     flashcardsDueToday, 
     addFlashcard, 
     reviewFlashcard, 
-    deleteFlashcard 
+    deleteFlashcard,
+    updateFlashcard,
+    getByDeck
   } = useFlashcards();
+  const { decks, addDeck, deleteDeck, updateDeck } = useFlashcardDecks();
   const { addSession } = useSessions();
   
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-  const [reviewStartTime] = useSessionStartTime<number | null>(() => null);
+  const [expandedSubjects, setExpandedSubjects] = useState<Set<string>>(new Set());
+  const [newDeckDialogOpen, setNewDeckDialogOpen] = useState(false);
+  const [newDeckSubjectId, setNewDeckSubjectId] = useState('');
+  const [newDeckName, setNewDeckName] = useState('');
+  const [newDeckDescription, setNewDeckDescription] = useState('');
+  const [editingFlashcard, setEditingFlashcard] = useState<any>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
-  const filteredFlashcards = selectedSubject 
-    ? flashcards.filter(f => f.subject_id === selectedSubject)
-    : flashcards;
+  const toggleSubject = (subjectId: string) => {
+    const newExpanded = new Set(expandedSubjects);
+    if (newExpanded.has(subjectId)) {
+      newExpanded.delete(subjectId);
+    } else {
+      newExpanded.add(subjectId);
+    }
+    setExpandedSubjects(newExpanded);
+  };
 
   const handleReview = (params: { id: string; quality: number }) => {
     reviewFlashcard(params);
@@ -38,6 +59,55 @@ const FlashcardsPage = () => {
       addSession({ subjectId: card.subject_id, duration: 1, type: 'flashcard' });
     }
   };
+
+  const handleAddDeck = () => {
+    if (!newDeckSubjectId || !newDeckName.trim()) return;
+    
+    addDeck({
+      subjectId: newDeckSubjectId,
+      name: newDeckName.trim(),
+      description: newDeckDescription.trim() || undefined,
+    });
+    
+    setNewDeckDialogOpen(false);
+    setNewDeckName('');
+    setNewDeckDescription('');
+    setNewDeckSubjectId('');
+  };
+
+  const handleEditFlashcard = (flashcard: any) => {
+    setEditingFlashcard(flashcard);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingFlashcard) return;
+    updateFlashcard({
+      id: editingFlashcard.id,
+      front: editingFlashcard.front,
+      back: editingFlashcard.back,
+      deckId: editingFlashcard.deck_id,
+    });
+    setEditDialogOpen(false);
+    setEditingFlashcard(null);
+  };
+
+  // Get subjects with their decks and cards
+  const subjectsWithContent = subjects.map(subject => {
+    const subjectDecks = decks.filter(d => d.subject_id === subject.id);
+    const subjectCards = flashcards.filter(f => f.subject_id === subject.id);
+    const cardsWithoutDeck = subjectCards.filter(f => !f.deck_id);
+    
+    return {
+      ...subject,
+      decks: subjectDecks.map(deck => ({
+        ...deck,
+        cards: getByDeck(deck.id)
+      })),
+      cardsWithoutDeck,
+      totalCards: subjectCards.length,
+    };
+  }).filter(s => s.totalCards > 0 || s.decks.length > 0);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
@@ -52,7 +122,61 @@ const FlashcardsPage = () => {
               Revise e memorize com o sistema de repetição espaçada (estilo Anki).
             </p>
           </div>
-          <AddFlashcardDialogNew subjects={subjects} onAdd={addFlashcard} />
+          <div className="flex items-center gap-2">
+            <Dialog open={newDeckDialogOpen} onOpenChange={setNewDeckDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  <FolderPlus className="w-4 h-4" />
+                  Novo Baralho
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="font-display">Criar Baralho</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Matéria</Label>
+                    <Select value={newDeckSubjectId} onValueChange={setNewDeckSubjectId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a matéria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subjects.map(s => (
+                          <SelectItem key={s.id} value={s.id}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                              {s.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nome do Baralho</Label>
+                    <Input
+                      placeholder="Ex: Princípios Constitucionais"
+                      value={newDeckName}
+                      onChange={(e) => setNewDeckName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Descrição (opcional)</Label>
+                    <Textarea
+                      placeholder="Descreva o conteúdo do baralho..."
+                      value={newDeckDescription}
+                      onChange={(e) => setNewDeckDescription(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleAddDeck} className="w-full gradient-primary">
+                    Criar Baralho
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <AddFlashcardDialogNew subjects={subjects} decks={decks} onAdd={addFlashcard} />
+          </div>
         </div>
       </header>
 
@@ -77,35 +201,7 @@ const FlashcardsPage = () => {
         </TabsContent>
 
         <TabsContent value="all" className="space-y-6 animate-fade-in">
-          {/* Subject Filter */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedSubject === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedSubject(null)}
-              className={selectedSubject === null ? "gradient-primary" : ""}
-            >
-              Todas
-            </Button>
-            {subjects.map((subject) => (
-              <Button
-                key={subject.id}
-                variant={selectedSubject === subject.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedSubject(subject.id)}
-                style={selectedSubject === subject.id ? { backgroundColor: subject.color } : {}}
-              >
-                <span 
-                  className="w-2.5 h-2.5 rounded-full mr-2"
-                  style={{ backgroundColor: selectedSubject === subject.id ? 'white' : subject.color }}
-                />
-                {subject.name}
-              </Button>
-            ))}
-          </div>
-
-          {/* Flashcard Grid */}
-          {filteredFlashcards.length === 0 ? (
+          {subjectsWithContent.length === 0 ? (
             <Card className="p-12 text-center shadow-card">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Layers className="w-8 h-8 text-muted-foreground" />
@@ -116,78 +212,192 @@ const FlashcardsPage = () => {
               <p className="text-muted-foreground text-sm mb-4">
                 Crie flashcards para memorizar o conteúdo das suas matérias.
               </p>
-              <AddFlashcardDialogNew subjects={subjects} onAdd={addFlashcard} />
+              <AddFlashcardDialogNew subjects={subjects} decks={decks} onAdd={addFlashcard} />
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredFlashcards.map((card, index) => {
-                const subject = subjects.find(s => s.id === card.subject_id);
-                const nextReview = new Date(card.next_review);
-                const isOverdue = nextReview <= new Date();
-                
-                return (
-                  <Card 
-                    key={card.id}
-                    className={cn(
-                      "p-4 shadow-card hover:shadow-elevated transition-all duration-300",
-                      "cursor-pointer group animate-slide-up"
-                    )}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      {subject && (
-                        <span 
-                          className="px-2 py-0.5 rounded text-xs font-medium"
-                          style={{ 
-                            backgroundColor: `${subject.color}20`,
-                            color: subject.color,
-                          }}
-                        >
-                          {subject.name}
-                        </span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive h-6 w-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteFlashcard(card.id);
-                        }}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                    
-                    <p className="font-medium text-sm line-clamp-3 mb-2">
-                      {card.front}
-                    </p>
-                    
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                      {card.back}
-                    </p>
-                    
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className={cn(
-                          "w-3 h-3",
-                          isOverdue ? "text-warning" : "text-muted-foreground"
-                        )} />
-                        <span className={isOverdue ? "text-warning font-medium" : "text-muted-foreground"}>
-                          {isOverdue ? 'Revisar agora' : `Próxima: ${nextReview.toLocaleDateString('pt-BR')}`}
+            <div className="space-y-4">
+              {subjectsWithContent.map(subject => (
+                <Collapsible
+                  key={subject.id}
+                  open={expandedSubjects.has(subject.id)}
+                  onOpenChange={() => toggleSubject(subject.id)}
+                >
+                  <Card className="shadow-card overflow-hidden">
+                    <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: subject.color }}
+                        />
+                        <span className="font-semibold">{subject.name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({subject.totalCards} cards, {subject.decks.length} baralhos)
                         </span>
                       </div>
-                      <span className="text-muted-foreground">
-                        {card.repetitions}x revisado
-                      </span>
-                    </div>
+                      {expandedSubjects.has(subject.id) ? (
+                        <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      )}
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <div className="p-4 pt-0 space-y-4">
+                        {/* Decks */}
+                        {subject.decks.map(deck => (
+                          <div key={deck.id} className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <h4 className="font-medium">{deck.name}</h4>
+                                {deck.description && (
+                                  <p className="text-sm text-muted-foreground">{deck.description}</p>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {deck.cards.length} cards
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => deleteDeck(deck.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            
+                            {deck.cards.length > 0 && (
+                              <div className="space-y-2">
+                                {deck.cards.map(card => (
+                                  <div
+                                    key={card.id}
+                                    className="flex items-center justify-between p-2 bg-muted/50 rounded group"
+                                  >
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{card.front}</p>
+                                      <p className="text-xs text-muted-foreground truncate">{card.back}</p>
+                                    </div>
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7"
+                                        onClick={() => handleEditFlashcard(card)}
+                                      >
+                                        <Pencil className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                        onClick={() => deleteFlashcard(card.id)}
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {/* Cards without deck */}
+                        {subject.cardsWithoutDeck.length > 0 && (
+                          <div className="border rounded-lg p-4">
+                            <h4 className="font-medium mb-3">Sem baralho ({subject.cardsWithoutDeck.length})</h4>
+                            <div className="space-y-2">
+                              {subject.cardsWithoutDeck.map(card => (
+                                <div
+                                  key={card.id}
+                                  className="flex items-center justify-between p-2 bg-muted/50 rounded group"
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{card.front}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{card.back}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={() => handleEditFlashcard(card)}
+                                    >
+                                      <Pencil className="w-3 h-3" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-destructive hover:text-destructive"
+                                      onClick={() => deleteFlashcard(card.id)}
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CollapsibleContent>
                   </Card>
-                );
-              })}
+                </Collapsible>
+              ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Edit Flashcard Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Editar Flashcard</DialogTitle>
+          </DialogHeader>
+          {editingFlashcard && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Frente (Pergunta)</Label>
+                <Textarea
+                  value={editingFlashcard.front}
+                  onChange={(e) => setEditingFlashcard({ ...editingFlashcard, front: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Verso (Resposta)</Label>
+                <Textarea
+                  value={editingFlashcard.back}
+                  onChange={(e) => setEditingFlashcard({ ...editingFlashcard, back: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Baralho (opcional)</Label>
+                <Select
+                  value={editingFlashcard.deck_id || ''}
+                  onValueChange={(v) => setEditingFlashcard({ ...editingFlashcard, deck_id: v || null })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sem baralho" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sem baralho</SelectItem>
+                    {decks
+                      .filter(d => d.subject_id === editingFlashcard.subject_id)
+                      .map(deck => (
+                        <SelectItem key={deck.id} value={deck.id}>{deck.name}</SelectItem>
+                      ))
+                    }
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleSaveEdit} className="w-full gradient-primary">
+                Salvar Alterações
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
