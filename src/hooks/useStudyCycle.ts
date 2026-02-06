@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { StudyCycle, Subject, StudyScheduleItem, DifficultyLevel } from '@/types/database';
+import { StudyCycle, Subject, StudyScheduleItem, DifficultyLevel, StudyPlanType } from '@/types/database';
 import { toast } from 'sonner';
 
 const defaultCycle: Omit<StudyCycle, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
@@ -126,10 +126,16 @@ export function useStudyCycle(subjects: Subject[]) {
           .single();
 
         if (insertError) throw insertError;
-        return newCycle as StudyCycle;
+        return {
+          ...newCycle,
+          plan_type: (newCycle.plan_type === 'injected' ? 'plan' : newCycle.plan_type) as StudyPlanType
+        } as StudyCycle;
       }
 
-      return data as StudyCycle;
+      return {
+        ...data,
+        plan_type: (data.plan_type === 'injected' ? 'plan' : data.plan_type) as StudyPlanType
+      } as StudyCycle;
     },
   });
 
@@ -150,10 +156,10 @@ export function useStudyCycle(subjects: Subject[]) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['study-cycle'] });
-      toast.success('Ciclo atualizado!');
+      toast.success('Configurações atualizadas!');
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar ciclo');
+      toast.error('Erro ao atualizar configurações');
       console.error(error);
     },
   });

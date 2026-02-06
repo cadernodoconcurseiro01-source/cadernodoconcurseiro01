@@ -71,16 +71,16 @@
                      </div>
                    )}
                    
-                   <div className="flex items-center gap-1">
-                     {contest.study_plan_type === 'cycle' ? (
-                       <RefreshCw className="w-4 h-4" />
-                     ) : (
-                       <Layers className="w-4 h-4" />
-                     )}
-                     <span>
-                       {contest.study_plan_type === 'cycle' ? 'Ciclo' : 'Plano Injetado'} • {contest.cycle_days} dias
-                     </span>
-                   </div>
+                    <div className="flex items-center gap-1">
+                      {contest.study_plan_type === 'cycle' ? (
+                        <RefreshCw className="w-4 h-4" />
+                      ) : (
+                        <Layers className="w-4 h-4" />
+                      )}
+                      <span>
+                        {contest.cycle_number}º {contest.study_plan_type === 'cycle' ? 'Ciclo' : 'Plano'} • {contest.cycle_days} dias
+                      </span>
+                    </div>
                  </div>
                </div>
  

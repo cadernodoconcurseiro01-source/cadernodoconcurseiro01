@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { StudyScheduleItem, StudyCycle } from '@/types/database';
-import { Settings2, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Calendar, RefreshCw, Layers } from 'lucide-react';
+import { StudyScheduleItem, StudyCycle, StudyPlanType } from '@/types/database';
+import { Settings2, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Calendar, RefreshCw } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -95,21 +95,21 @@ export function StudyCycleCard({ schedule, cycle, onUpdateCycle, onRefreshSchedu
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle className="font-display">Configurar Ciclo</DialogTitle>
+                <DialogTitle className="font-display">Configurar Estudos</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label>Tipo de Plano</Label>
                   <Select 
                     value={localCycle.plan_type} 
-                    onValueChange={(v: 'cycle' | 'injected') => setLocalCycle({ ...localCycle, plan_type: v })}
+                    onValueChange={(v: StudyPlanType) => setLocalCycle({ ...localCycle, plan_type: v })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="cycle">Ciclo de Estudos (Rotativo)</SelectItem>
-                      <SelectItem value="injected">Plano Injetado (Fixo)</SelectItem>
+                      <SelectItem value="plan">Plano de Estudos (Fixo)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

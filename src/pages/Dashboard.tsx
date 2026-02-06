@@ -150,12 +150,12 @@ const Dashboard = () => {
           />
         </section>
 
-        {/* Study Cycle */}
+        {/* Study */}
         <section className="lg:col-span-1">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-xl font-semibold flex items-center gap-2">
               <Calendar className="w-5 h-5 text-warning" />
-              Ciclo de Estudos
+              Estudos
             </h2>
           </div>
           <StudyCycleCard 

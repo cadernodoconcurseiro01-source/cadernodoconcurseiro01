@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string
           cycle_days: number
+          cycle_number: number
           exam_date: string | null
           id: string
           is_active: boolean
@@ -29,6 +30,7 @@ export type Database = {
         Insert: {
           created_at?: string
           cycle_days?: number
+          cycle_number?: number
           exam_date?: string | null
           id?: string
           is_active?: boolean
@@ -40,6 +42,7 @@ export type Database = {
         Update: {
           created_at?: string
           cycle_days?: number
+          cycle_number?: number
           exam_date?: string | null
           id?: string
           is_active?: boolean
@@ -94,10 +97,49 @@ export type Database = {
           },
         ]
       }
+      flashcard_decks: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          subject_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          subject_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          subject_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcard_decks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcards: {
         Row: {
           back: string
           created_at: string
+          deck_id: string | null
           ease_factor: number
           front: string
           id: string
@@ -111,6 +153,7 @@ export type Database = {
         Insert: {
           back: string
           created_at?: string
+          deck_id?: string | null
           ease_factor?: number
           front: string
           id?: string
@@ -124,6 +167,7 @@ export type Database = {
         Update: {
           back?: string
           created_at?: string
+          deck_id?: string | null
           ease_factor?: number
           front?: string
           id?: string
@@ -136,6 +180,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "flashcards_deck_id_fkey"
+            columns: ["deck_id"]
+            isOneToOne: false
+            referencedRelation: "flashcard_decks"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "flashcards_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
@@ -146,6 +197,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           daily_study_hours: number | null
           display_name: string | null
@@ -154,6 +206,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           daily_study_hours?: number | null
           display_name?: string | null
@@ -162,6 +215,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           daily_study_hours?: number | null
           display_name?: string | null
@@ -179,6 +233,7 @@ export type Database = {
           exam_date: string
           id: string
           name: string
+          subject_details: Json | null
           total_questions: number
           updated_at: string
           user_id: string
@@ -191,6 +246,7 @@ export type Database = {
           exam_date?: string
           id?: string
           name: string
+          subject_details?: Json | null
           total_questions?: number
           updated_at?: string
           user_id: string
@@ -203,6 +259,7 @@ export type Database = {
           exam_date?: string
           id?: string
           name?: string
+          subject_details?: Json | null
           total_questions?: number
           updated_at?: string
           user_id?: string

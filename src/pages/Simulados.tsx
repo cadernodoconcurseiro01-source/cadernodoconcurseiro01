@@ -1,17 +1,19 @@
- import { useState } from 'react';
- import { FileText } from 'lucide-react';
- import { useSimulados } from '@/hooks/useSimulados';
- import { useContests } from '@/hooks/useContests';
- import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
- import { SimuladoList } from '@/components/SimuladoList';
- import { Simulado } from '@/types/database';
- import { Skeleton } from '@/components/ui/skeleton';
- import { Card } from '@/components/ui/card';
- import { Target, CheckCircle, XCircle, Percent } from 'lucide-react';
- 
- const SimuladosPage = () => {
-   const { simulados, isLoading, addSimulado, updateSimulado, deleteSimulado, getStats } = useSimulados();
-   const { contests } = useContests();
+import { useState } from 'react';
+import { FileText } from 'lucide-react';
+import { useSimulados } from '@/hooks/useSimulados';
+import { useContests } from '@/hooks/useContests';
+import { useSubjects } from '@/hooks/useSubjects';
+import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
+import { SimuladoList } from '@/components/SimuladoList';
+import { Simulado } from '@/types/database';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
+import { Target, CheckCircle, XCircle, Percent } from 'lucide-react';
+
+const SimuladosPage = () => {
+  const { simulados, isLoading, addSimulado, updateSimulado, deleteSimulado, getStats } = useSimulados();
+  const { contests } = useContests();
+  const { subjects } = useSubjects();
    const [editingSimulado, setEditingSimulado] = useState<Simulado | null>(null);
    const [editDialogOpen, setEditDialogOpen] = useState(false);
  
@@ -48,7 +50,7 @@
                Registre e acompanhe seu desempenho nos simulados.
              </p>
            </div>
-           <AddSimuladoDialog onAdd={addSimulado} contests={contests} />
+           <AddSimuladoDialog onAdd={addSimulado} contests={contests} subjects={subjects} />
          </div>
        </header>
  
@@ -107,10 +109,11 @@
          onDelete={deleteSimulado} 
        />
  
-       <AddSimuladoDialog
-         onAdd={addSimulado}
-         contests={contests}
-         editingSimulado={editingSimulado}
+        <AddSimuladoDialog
+          onAdd={addSimulado}
+          contests={contests}
+          subjects={subjects}
+          editingSimulado={editingSimulado}
          onUpdate={updateSimulado}
          open={editDialogOpen}
          onOpenChange={(open) => {
