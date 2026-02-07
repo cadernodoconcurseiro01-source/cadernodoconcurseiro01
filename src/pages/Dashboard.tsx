@@ -12,12 +12,14 @@ import { useFlashcards } from '@/hooks/useFlashcards';
 import { useTimerSettings } from '@/hooks/useTimerSettings';
 import { useStudyCycle } from '@/hooks/useStudyCycle';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { useState, useEffect } from 'react';
 import { Subject } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { subjects, isLoading: subjectsLoading, addSubject, updateSubject, deleteSubject } = useSubjects();
   const { getStats, addSession } = useSessions();
   const { flashcardsDueToday } = useFlashcards();
@@ -46,7 +48,11 @@ const Dashboard = () => {
   };
 
   const handleSessionComplete = (subjectId: string, duration: number) => {
-    addSession({ subjectId, duration, type: 'pomodoro' });
+    try {
+      addSession({ subjectId, duration, type: 'pomodoro' });
+    } catch (error) {
+      console.error('Error adding session:', error);
+    }
   };
 
   const handleEditSubject = (subject: Subject) => {
@@ -57,6 +63,8 @@ const Dashboard = () => {
   const handleRefreshSchedule = () => {
     setSchedule(getTodaySchedule());
   };
+
+  const displayName = profile?.display_name || user?.user_metadata?.full_name || '';
 
   if (subjectsLoading) {
     return (
@@ -79,7 +87,7 @@ const Dashboard = () => {
       <header className="mb-8 animate-fade-in">
         <div className="flex items-center justify-between">
           <h1 className="font-display text-3xl font-bold mb-2">
-            Olá{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''}! 👋
+            Olá{displayName ? `, ${displayName}` : ''}! 👋
           </h1>
           <div className="flex items-center gap-2">
             <Link to="/contests">

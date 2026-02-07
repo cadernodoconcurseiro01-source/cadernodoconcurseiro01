@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Subject } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface TimerSettings {
   focus_duration: number;
@@ -25,6 +26,38 @@ interface PomodoroTimerProps {
 
 type TimerMode = 'focus' | 'shortBreak' | 'longBreak';
 
+// Play beep sound using Web Audio API
+function playBeeps(count = 3) {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    let beepIndex = 0;
+
+    const playBeep = () => {
+      if (beepIndex >= count) return;
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.3;
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.2);
+      
+      beepIndex++;
+      setTimeout(playBeep, 300);
+    };
+    
+    playBeep();
+  } catch (error) {
+    console.error('Error playing beep:', error);
+  }
+}
+
 export function PomodoroTimerNew({ 
   subjects, 
   settings,
@@ -32,9 +65,9 @@ export function PomodoroTimerNew({
   onSettingsChange,
 }: PomodoroTimerProps) {
   const TIMER_DURATIONS = {
-    focus: settings.focus_duration * 60,
-    shortBreak: settings.short_break_duration * 60,
-    longBreak: settings.long_break_duration * 60,
+    focus: (settings?.focus_duration || 25) * 60,
+    shortBreak: (settings?.short_break_duration || 5) * 60,
+    longBreak: (settings?.long_break_duration || 15) * 60,
   };
 
   const [mode, setMode] = useState<TimerMode>('focus');
@@ -46,14 +79,17 @@ export function PomodoroTimerNew({
   
   // Local settings state for the dialog
   const [localSettings, setLocalSettings] = useState(settings);
+  const hasPlayedSound = useRef(false);
 
   const resetTimer = useCallback(() => {
     setTimeLeft(TIMER_DURATIONS[mode]);
     setIsRunning(false);
+    hasPlayedSound.current = false;
   }, [mode, TIMER_DURATIONS]);
 
   useEffect(() => {
     setTimeLeft(TIMER_DURATIONS[mode]);
+    hasPlayedSound.current = false;
   }, [mode, settings]);
 
   useEffect(() => {
@@ -69,21 +105,34 @@ export function PomodoroTimerNew({
       interval = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && !hasPlayedSound.current) {
+      hasPlayedSound.current = true;
       setIsRunning(false);
       
-      if (mode === 'focus') {
-        onSessionComplete(selectedSubject, settings.focus_duration);
-        setCompletedPomodoros(prev => prev + 1);
-        
-        // Auto switch to break
-        if ((completedPomodoros + 1) % settings.sessions_until_long_break === 0) {
-          setMode('longBreak');
+      // Play beeps
+      playBeeps(3);
+      
+      try {
+        if (mode === 'focus') {
+          if (selectedSubject) {
+            onSessionComplete(selectedSubject, settings?.focus_duration || 25);
+          }
+          setCompletedPomodoros(prev => prev + 1);
+          toast.success('Pomodoro concluído! Hora de descansar.');
+          
+          // Auto switch to break
+          if ((completedPomodoros + 1) % (settings?.sessions_until_long_break || 4) === 0) {
+            setMode('longBreak');
+          } else {
+            setMode('shortBreak');
+          }
         } else {
-          setMode('shortBreak');
+          toast.success('Pausa finalizada! Pronto para focar.');
+          setMode('focus');
         }
-      } else {
-        setMode('focus');
+      } catch (error) {
+        console.error('Error handling timer completion:', error);
+        toast.error('Ocorreu um erro ao completar o timer');
       }
     }
 
@@ -107,8 +156,13 @@ export function PomodoroTimerNew({
   };
 
   const handleSaveSettings = () => {
-    onSettingsChange(localSettings);
-    setSettingsOpen(false);
+    try {
+      onSettingsChange(localSettings);
+      setSettingsOpen(false);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Erro ao salvar configurações');
+    }
   };
 
   return (
@@ -134,7 +188,7 @@ export function PomodoroTimerNew({
                     type="number"
                     min={1}
                     max={120}
-                    value={localSettings.focus_duration}
+                    value={localSettings?.focus_duration || 25}
                     onChange={(e) => setLocalSettings({ 
                       ...localSettings, 
                       focus_duration: Number(e.target.value) 
@@ -148,7 +202,7 @@ export function PomodoroTimerNew({
                     type="number"
                     min={1}
                     max={30}
-                    value={localSettings.short_break_duration}
+                    value={localSettings?.short_break_duration || 5}
                     onChange={(e) => setLocalSettings({ 
                       ...localSettings, 
                       short_break_duration: Number(e.target.value) 
@@ -162,7 +216,7 @@ export function PomodoroTimerNew({
                     type="number"
                     min={1}
                     max={60}
-                    value={localSettings.long_break_duration}
+                    value={localSettings?.long_break_duration || 15}
                     onChange={(e) => setLocalSettings({ 
                       ...localSettings, 
                       long_break_duration: Number(e.target.value) 
@@ -176,7 +230,7 @@ export function PomodoroTimerNew({
                     type="number"
                     min={1}
                     max={10}
-                    value={localSettings.sessions_until_long_break}
+                    value={localSettings?.sessions_until_long_break || 4}
                     onChange={(e) => setLocalSettings({ 
                       ...localSettings, 
                       sessions_until_long_break: Number(e.target.value) 
@@ -199,12 +253,13 @@ export function PomodoroTimerNew({
               onClick={() => {
                 setMode(m);
                 setIsRunning(false);
+                hasPlayedSound.current = false;
               }}
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                 mode === m 
                   ? "bg-primary text-primary-foreground shadow-soft" 
-                  : "text-muted-foreground hover:bg-muted"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               {m === 'focus' ? (
@@ -313,12 +368,12 @@ export function PomodoroTimerNew({
 
         {/* Pomodoro Counter */}
         <div className="flex justify-center gap-2">
-          {[...Array(settings.sessions_until_long_break)].map((_, i) => (
+          {[...Array(settings?.sessions_until_long_break || 4)].map((_, i) => (
             <div
               key={i}
               className={cn(
                 "w-3 h-3 rounded-full transition-all duration-300",
-                i < (completedPomodoros % settings.sessions_until_long_break)
+                i < (completedPomodoros % (settings?.sessions_until_long_break || 4))
                   ? "bg-primary scale-110"
                   : "bg-muted"
               )}

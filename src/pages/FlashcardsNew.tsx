@@ -16,6 +16,8 @@ import { useFlashcardDecks } from '@/hooks/useFlashcardDecks';
 import { useSessions } from '@/hooks/useSessions';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { FlashcardDeck } from '@/types/database';
+import { toast } from 'sonner';
 
 const FlashcardsPage = () => {
   const { subjects } = useSubjects();
@@ -31,7 +33,6 @@ const FlashcardsPage = () => {
   const { decks, addDeck, deleteDeck, updateDeck } = useFlashcardDecks();
   const { addSession } = useSessions();
   
-  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [expandedSubjects, setExpandedSubjects] = useState<Set<string>>(new Set());
   const [newDeckDialogOpen, setNewDeckDialogOpen] = useState(false);
   const [newDeckSubjectId, setNewDeckSubjectId] = useState('');
@@ -39,6 +40,12 @@ const FlashcardsPage = () => {
   const [newDeckDescription, setNewDeckDescription] = useState('');
   const [editingFlashcard, setEditingFlashcard] = useState<any>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  // Edit deck state
+  const [editingDeck, setEditingDeck] = useState<FlashcardDeck | null>(null);
+  const [editDeckDialogOpen, setEditDeckDialogOpen] = useState(false);
+  const [editDeckName, setEditDeckName] = useState('');
+  const [editDeckDescription, setEditDeckDescription] = useState('');
   
   const toggleSubject = (subjectId: string) => {
     const newExpanded = new Set(expandedSubjects);
@@ -51,28 +58,65 @@ const FlashcardsPage = () => {
   };
 
   const handleReview = (params: { id: string; quality: number }) => {
-    reviewFlashcard(params);
-    
-    // Track flashcard review time (approximate 1 minute per card)
-    const card = flashcards.find(f => f.id === params.id);
-    if (card) {
-      addSession({ subjectId: card.subject_id, duration: 1, type: 'flashcard' });
+    try {
+      reviewFlashcard(params);
+      
+      // Track flashcard review time (approximate 1 minute per card)
+      const card = flashcards.find(f => f.id === params.id);
+      if (card) {
+        addSession({ subjectId: card.subject_id, duration: 1, type: 'flashcard' });
+      }
+    } catch (error) {
+      console.error('Error reviewing flashcard:', error);
+      toast.error('Erro ao revisar flashcard');
     }
   };
 
   const handleAddDeck = () => {
-    if (!newDeckSubjectId || !newDeckName.trim()) return;
+    if (!newDeckSubjectId || !newDeckName.trim()) {
+      toast.error('Selecione uma matéria e digite um nome');
+      return;
+    }
     
-    addDeck({
-      subjectId: newDeckSubjectId,
-      name: newDeckName.trim(),
-      description: newDeckDescription.trim() || undefined,
-    });
+    try {
+      addDeck({
+        subjectId: newDeckSubjectId,
+        name: newDeckName.trim(),
+        description: newDeckDescription.trim() || undefined,
+      });
+      
+      setNewDeckDialogOpen(false);
+      setNewDeckName('');
+      setNewDeckDescription('');
+      setNewDeckSubjectId('');
+    } catch (error) {
+      console.error('Error adding deck:', error);
+      toast.error('Erro ao criar baralho');
+    }
+  };
+
+  const handleEditDeck = (deck: FlashcardDeck) => {
+    setEditingDeck(deck);
+    setEditDeckName(deck.name);
+    setEditDeckDescription(deck.description || '');
+    setEditDeckDialogOpen(true);
+  };
+
+  const handleSaveEditDeck = () => {
+    if (!editingDeck || !editDeckName.trim()) return;
     
-    setNewDeckDialogOpen(false);
-    setNewDeckName('');
-    setNewDeckDescription('');
-    setNewDeckSubjectId('');
+    try {
+      updateDeck({
+        id: editingDeck.id,
+        name: editDeckName.trim(),
+        description: editDeckDescription.trim() || undefined,
+      });
+      setEditDeckDialogOpen(false);
+      setEditingDeck(null);
+    } catch (error) {
+      console.error('Error updating deck:', error);
+      toast.error('Erro ao atualizar baralho');
+    }
   };
 
   const handleEditFlashcard = (flashcard: any) => {
@@ -82,14 +126,19 @@ const FlashcardsPage = () => {
 
   const handleSaveEdit = () => {
     if (!editingFlashcard) return;
-    updateFlashcard({
-      id: editingFlashcard.id,
-      front: editingFlashcard.front,
-      back: editingFlashcard.back,
-      deckId: editingFlashcard.deck_id,
-    });
-    setEditDialogOpen(false);
-    setEditingFlashcard(null);
+    try {
+      updateFlashcard({
+        id: editingFlashcard.id,
+        front: editingFlashcard.front,
+        back: editingFlashcard.back,
+        deckId: editingFlashcard.deck_id,
+      });
+      setEditDialogOpen(false);
+      setEditingFlashcard(null);
+    } catch (error) {
+      console.error('Error updating flashcard:', error);
+      toast.error('Erro ao atualizar flashcard');
+    }
   };
 
   // Get subjects with their decks and cards
@@ -256,14 +305,23 @@ const FlashcardsPage = () => {
                                   {deck.cards.length} cards
                                 </p>
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => deleteDeck(deck.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEditDeck(deck)}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => deleteDeck(deck.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
                             
                             {deck.cards.length > 0 && (
@@ -396,6 +454,34 @@ const FlashcardsPage = () => {
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Deck Dialog */}
+      <Dialog open={editDeckDialogOpen} onOpenChange={setEditDeckDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Editar Baralho</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Nome do Baralho</Label>
+              <Input
+                value={editDeckName}
+                onChange={(e) => setEditDeckName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Descrição (opcional)</Label>
+              <Textarea
+                value={editDeckDescription}
+                onChange={(e) => setEditDeckDescription(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleSaveEditDeck} className="w-full gradient-primary">
+              Salvar Alterações
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

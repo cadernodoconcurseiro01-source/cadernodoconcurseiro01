@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import logo from '@/assets/logo.png';
 
 const navItems = [
@@ -23,14 +24,25 @@ export function NavigationNew() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { profile } = useProfile();
 
   const handleLogout = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
-  const getInitials = (email: string) => {
+  const getInitials = (name: string | null | undefined, email: string) => {
+    if (name) {
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
     return email.substring(0, 2).toUpperCase();
   };
+
+  const displayName = profile?.display_name || user?.user_metadata?.full_name || null;
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   return (
     <nav className="sticky top-0 z-50 glass border-b">
@@ -74,16 +86,16 @@ export function NavigationNew() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="text-xs">
-                      {getInitials(user.email || 'US')}
+                    <AvatarImage src={avatarUrl || undefined} />
+                    <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                      {getInitials(displayName, user.email || 'US')}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem disabled className="text-xs text-muted-foreground">
-                  {user.email}
+                  {displayName || user.email}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/profile')}>
