@@ -81,9 +81,12 @@ const Auth = () => {
           <img 
             src={logo} 
             alt="Caderno do Concurseiro 01" 
-            className="h-20 mx-auto mb-4"
+            className="h-32 w-auto mx-auto mb-4"
           />
-          <p className="text-muted-foreground text-sm mt-1">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+            Caderno do Concurseiro 01
+          </h1>
+          <p className="text-muted-foreground text-sm">
             Organize seus estudos de forma inteligente
           </p>
         </div>

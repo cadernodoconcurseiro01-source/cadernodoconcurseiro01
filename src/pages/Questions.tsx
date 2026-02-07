@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { HelpCircle, Plus, Pencil, Trash2, Calendar } from 'lucide-react';
+import { HelpCircle, Calendar, Pencil, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
