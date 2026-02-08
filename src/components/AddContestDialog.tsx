@@ -37,27 +37,31 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
     }
   }, [editingContest]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const contestData = {
-      name: name.trim(),
-      exam_date: examDate || null,
-      study_plan_type: studyPlanType,
-      cycle_days: cycleDays,
-      cycle_number: cycleNumber,
-      is_active: true,
-    };
+    try {
+      const contestData = {
+        name: name.trim(),
+        exam_date: examDate || null,
+        study_plan_type: studyPlanType || 'cycle',
+        cycle_days: cycleDays || 7,
+        cycle_number: cycleNumber || 1,
+        is_active: true,
+      };
 
-    if (editingContest && onUpdate) {
-      onUpdate({ id: editingContest.id, ...contestData });
-    } else {
-      onAdd(contestData);
+      if (editingContest && onUpdate) {
+        await onUpdate({ id: editingContest.id, ...contestData });
+      } else {
+        await onAdd(contestData);
+      }
+
+      resetForm();
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error saving contest:', error);
     }
-
-    resetForm();
-    setIsOpen(false);
   };
 
   const resetForm = () => {

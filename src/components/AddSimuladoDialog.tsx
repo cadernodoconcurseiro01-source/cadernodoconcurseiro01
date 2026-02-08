@@ -89,29 +89,33 @@ export function AddSimuladoDialog({ onAdd, contests, subjects, editingSimulado, 
     return { total, correct, wrong };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const totals = getTotals();
-    const simuladoData = {
-      name: name.trim(),
-      contest_id: contestId || null,
-      exam_date: examDate,
-      total_questions: totals.total,
-      correct_answers: totals.correct,
-      wrong_answers: totals.wrong,
-      subject_details: subjectDetails.length > 0 ? subjectDetails : null,
-    };
+    try {
+      const totals = getTotals();
+      const simuladoData = {
+        name: name.trim(),
+        contest_id: contestId || null,
+        exam_date: examDate,
+        total_questions: totals.total,
+        correct_answers: totals.correct,
+        wrong_answers: totals.wrong,
+        subject_details: subjectDetails.length > 0 ? subjectDetails : null,
+      };
 
-    if (editingSimulado && onUpdate) {
-      onUpdate({ id: editingSimulado.id, ...simuladoData });
-    } else {
-      onAdd(simuladoData);
+      if (editingSimulado && onUpdate) {
+        await onUpdate({ id: editingSimulado.id, ...simuladoData });
+      } else {
+        await onAdd(simuladoData);
+      }
+
+      resetForm();
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error saving simulado:', error);
     }
-
-    resetForm();
-    setIsOpen(false);
   };
 
   const resetForm = () => {
