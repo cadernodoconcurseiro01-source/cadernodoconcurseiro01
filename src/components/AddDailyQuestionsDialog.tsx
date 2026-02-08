@@ -39,21 +39,25 @@
      setWrongAnswers(Math.max(0, totalQuestions - value));
    };
  
-   const handleSubmit = (e: React.FormEvent) => {
-     e.preventDefault();
-     if (!subjectId || totalQuestions === 0) return;
- 
-     onAdd({
-       subject_id: subjectId,
-       question_date: questionDate,
-       total_questions: totalQuestions,
-       correct_answers: correctAnswers,
-       wrong_answers: wrongAnswers,
-     });
- 
-     resetForm();
-     setOpen(false);
-   };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subjectId || totalQuestions === 0) return;
+
+    try {
+      await onAdd({
+        subject_id: subjectId,
+        question_date: questionDate,
+        total_questions: totalQuestions,
+        correct_answers: correctAnswers,
+        wrong_answers: wrongAnswers,
+      });
+
+      resetForm();
+      setOpen(false);
+    } catch (error) {
+      console.error('Error adding questions:', error);
+    }
+  };
  
    const resetForm = () => {
      setSubjectId('');

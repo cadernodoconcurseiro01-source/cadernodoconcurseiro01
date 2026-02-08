@@ -27,15 +27,19 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
     setDeckId(''); // Reset deck when subject changes
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!front.trim() || !back.trim() || !subjectId) return;
 
-    onAdd({ subjectId, front, back, deckId: deckId || undefined });
-    setOpen(false);
-    setFront('');
-    setBack('');
-    setDeckId('');
+    try {
+      await onAdd({ subjectId, front, back, deckId: deckId || undefined });
+      setOpen(false);
+      setFront('');
+      setBack('');
+      setDeckId('');
+    } catch (error) {
+      console.error('Error adding flashcard:', error);
+    }
   };
 
   return (

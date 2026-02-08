@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,7 @@ import PomodoroPage from "./pages/PomodoroNew";
 import SubjectsPage from "./pages/SubjectsNew";
 import FlashcardsPage from "./pages/FlashcardsNew";
 import ContestsPage from "./pages/Contests";
+import ContestDetailsPage from "./pages/ContestDetails";
 import QuestionsPage from "./pages/Questions";
 import SimuladosPage from "./pages/Simulados";
 import StatisticsPage from "./pages/Statistics";
@@ -18,11 +20,26 @@ import VersePage from "./pages/Verse";
 import ProfilePage from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { toast } from "sonner";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { user, loading } = useAuth();
+
+  // Global error handler to prevent white screen crashes
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      event.preventDefault();
+      toast.error('Ocorreu um erro. Por favor, tente novamente.');
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
 
   // Redirect authenticated users away from auth page
   if (!loading && user && window.location.pathname === '/auth') {
@@ -72,6 +89,14 @@ function AppRoutes() {
             element={
               <ProtectedRoute>
                 <ContestsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/contests/:id" 
+            element={
+              <ProtectedRoute>
+                <ContestDetailsPage />
               </ProtectedRoute>
             } 
           />

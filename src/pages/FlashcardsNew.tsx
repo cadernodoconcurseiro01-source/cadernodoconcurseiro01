@@ -72,14 +72,18 @@ const FlashcardsPage = () => {
     }
   };
 
-  const handleAddDeck = () => {
-    if (!newDeckSubjectId || !newDeckName.trim()) {
-      toast.error('Selecione uma matéria e digite um nome');
+  const handleAddDeck = async () => {
+    if (!newDeckSubjectId) {
+      toast.error('Selecione uma matéria');
+      return;
+    }
+    if (!newDeckName.trim()) {
+      toast.error('Digite um nome para o baralho');
       return;
     }
     
     try {
-      addDeck({
+      await addDeck({
         subjectId: newDeckSubjectId,
         name: newDeckName.trim(),
         description: newDeckDescription.trim() || undefined,
@@ -89,6 +93,7 @@ const FlashcardsPage = () => {
       setNewDeckName('');
       setNewDeckDescription('');
       setNewDeckSubjectId('');
+      toast.success('Baralho criado com sucesso!');
     } catch (error) {
       console.error('Error adding deck:', error);
       toast.error('Erro ao criar baralho');
