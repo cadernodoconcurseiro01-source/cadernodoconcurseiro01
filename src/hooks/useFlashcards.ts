@@ -228,9 +228,11 @@ export function useFlashcards() {
     flashcardsDueToday,
     isLoading,
     addFlashcard: addFlashcard.mutate,
+    addFlashcardAsync: addFlashcard.mutateAsync,
     reviewFlashcard: reviewFlashcard.mutate,
     deleteFlashcard: deleteFlashcard.mutate,
     updateFlashcard: updateFlashcard.mutate,
+    updateFlashcardAsync: updateFlashcard.mutateAsync,
     getBySubject,
     getByDeck,
   };

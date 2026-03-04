@@ -138,12 +138,13 @@
      return { total, correct, wrong, percentage };
    };
  
-   return {
-     dailyQuestions,
-     isLoading,
-     addOrUpdateDailyQuestions: addOrUpdateDailyQuestions.mutate,
-     getWeeklyStats,
-     getBySubject,
-     getTotalStats,
-   };
+    return {
+      dailyQuestions,
+      isLoading,
+      addOrUpdateDailyQuestions: addOrUpdateDailyQuestions.mutate,
+      addOrUpdateDailyQuestionsAsync: addOrUpdateDailyQuestions.mutateAsync,
+      getWeeklyStats,
+      getBySubject,
+      getTotalStats,
+    };
  }

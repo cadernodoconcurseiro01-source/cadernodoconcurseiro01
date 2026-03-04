@@ -164,7 +164,9 @@ export function useSubjects() {
     subjects,
     isLoading,
     addSubject: addSubject.mutate,
+    addSubjectAsync: addSubject.mutateAsync,
     addSubjectWithContest: addSubjectWithContest.mutate,
+    addSubjectWithContestAsync: addSubjectWithContest.mutateAsync,
     updateSubject: updateSubject.mutate,
     deleteSubject: deleteSubject.mutate,
   };

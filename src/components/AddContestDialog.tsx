@@ -6,11 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trophy } from 'lucide-react';
 import { Contest, StudyPlanType } from '@/types/database';
+import { toast } from 'sonner';
 
 interface AddContestDialogProps {
-  onAdd: (contest: Omit<Contest, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  onAdd: (contest: Omit<Contest, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<unknown> | void;
   editingContest?: Contest | null;
-  onUpdate?: (contest: Partial<Contest> & { id: string }) => void;
+  onUpdate?: (contest: Partial<Contest> & { id: string }) => Promise<unknown> | void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -39,15 +40,19 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      toast.error('Informe o nome do concurso');
+      return;
+    }
 
     try {
+      const safeStudyPlanType: StudyPlanType = studyPlanType === 'plan' ? 'plan' : 'cycle';
       const contestData = {
         name: name.trim(),
         exam_date: examDate || null,
-        study_plan_type: studyPlanType || 'cycle',
-        cycle_days: cycleDays || 7,
-        cycle_number: cycleNumber || 1,
+        study_plan_type: safeStudyPlanType,
+        cycle_days: Math.max(1, cycleDays || 7),
+        cycle_number: Math.max(1, cycleNumber || 1),
         is_active: true,
       };
 
@@ -61,6 +66,7 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
       setIsOpen(false);
     } catch (error) {
       console.error('Error saving contest:', error);
+      toast.error('Erro ao salvar concurso');
     }
   };
 
@@ -115,7 +121,7 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
 
           <div className="space-y-2">
             <Label>Tipo de Plano de Estudos</Label>
-            <Select value={studyPlanType} onValueChange={(v: StudyPlanType) => setStudyPlanType(v)}>
+            <Select value={studyPlanType} onValueChange={(value) => setStudyPlanType(value === 'plan' ? 'plan' : 'cycle')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

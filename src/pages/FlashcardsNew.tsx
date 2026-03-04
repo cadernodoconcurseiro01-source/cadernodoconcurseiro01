@@ -24,13 +24,13 @@ const FlashcardsPage = () => {
   const { 
     flashcards, 
     flashcardsDueToday, 
-    addFlashcard, 
+    addFlashcardAsync,
     reviewFlashcard, 
     deleteFlashcard,
-    updateFlashcard,
+    updateFlashcardAsync,
     getByDeck
   } = useFlashcards();
-  const { decks, addDeck, deleteDeck, updateDeck } = useFlashcardDecks();
+  const { decks, addDeckAsync, deleteDeck, updateDeckAsync } = useFlashcardDecks();
   const { addSession } = useSessions();
   
   const [expandedSubjects, setExpandedSubjects] = useState<Set<string>>(new Set());
@@ -46,7 +46,8 @@ const FlashcardsPage = () => {
   const [editDeckDialogOpen, setEditDeckDialogOpen] = useState(false);
   const [editDeckName, setEditDeckName] = useState('');
   const [editDeckDescription, setEditDeckDescription] = useState('');
-  
+
+  const NO_DECK_VALUE = 'no-deck';
   const toggleSubject = (subjectId: string) => {
     const newExpanded = new Set(expandedSubjects);
     if (newExpanded.has(subjectId)) {
@@ -83,7 +84,7 @@ const FlashcardsPage = () => {
     }
     
     try {
-      await addDeck({
+      await addDeckAsync({
         subjectId: newDeckSubjectId,
         name: newDeckName.trim(),
         description: newDeckDescription.trim() || undefined,
@@ -107,11 +108,11 @@ const FlashcardsPage = () => {
     setEditDeckDialogOpen(true);
   };
 
-  const handleSaveEditDeck = () => {
+  const handleSaveEditDeck = async () => {
     if (!editingDeck || !editDeckName.trim()) return;
     
     try {
-      updateDeck({
+      await updateDeckAsync({
         id: editingDeck.id,
         name: editDeckName.trim(),
         description: editDeckDescription.trim() || undefined,
@@ -129,10 +130,10 @@ const FlashcardsPage = () => {
     setEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingFlashcard) return;
     try {
-      updateFlashcard({
+      await updateFlashcardAsync({
         id: editingFlashcard.id,
         front: editingFlashcard.front,
         back: editingFlashcard.back,
@@ -229,7 +230,7 @@ const FlashcardsPage = () => {
                 </div>
               </DialogContent>
             </Dialog>
-            <AddFlashcardDialogNew subjects={subjects} decks={decks} onAdd={addFlashcard} />
+            <AddFlashcardDialogNew subjects={subjects} decks={decks} onAdd={addFlashcardAsync} />
           </div>
         </div>
       </header>
@@ -266,7 +267,7 @@ const FlashcardsPage = () => {
               <p className="text-muted-foreground text-sm mb-4">
                 Crie flashcards para memorizar o conteúdo das suas matérias.
               </p>
-              <AddFlashcardDialogNew subjects={subjects} decks={decks} onAdd={addFlashcard} />
+              <AddFlashcardDialogNew subjects={subjects} decks={decks} onAdd={addFlashcardAsync} />
             </Card>
           ) : (
             <div className="space-y-4">
@@ -437,14 +438,14 @@ const FlashcardsPage = () => {
               <div className="space-y-2">
                 <Label>Baralho (opcional)</Label>
                 <Select
-                  value={editingFlashcard.deck_id || ''}
-                  onValueChange={(v) => setEditingFlashcard({ ...editingFlashcard, deck_id: v || null })}
+                  value={editingFlashcard.deck_id ?? NO_DECK_VALUE}
+                  onValueChange={(v) => setEditingFlashcard({ ...editingFlashcard, deck_id: v === NO_DECK_VALUE ? null : v })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Sem baralho" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sem baralho</SelectItem>
+                    <SelectItem value={NO_DECK_VALUE}>Sem baralho</SelectItem>
                     {decks
                       .filter(d => d.subject_id === editingFlashcard.subject_id)
                       .map(deck => (

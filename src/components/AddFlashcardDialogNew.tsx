@@ -10,8 +10,10 @@ import { Subject, FlashcardDeck } from '@/types/database';
 interface AddFlashcardDialogNewProps {
   subjects: Subject[];
   decks?: FlashcardDeck[];
-  onAdd: (params: { subjectId: string; front: string; back: string; deckId?: string }) => void;
+  onAdd: (params: { subjectId: string; front: string; back: string; deckId?: string }) => Promise<unknown> | void;
 }
+
+const NO_DECK_VALUE = 'no-deck';
 
 export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashcardDialogNewProps) {
   const [open, setOpen] = useState(false);
@@ -24,7 +26,7 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
 
   const handleSubjectChange = (value: string) => {
     setSubjectId(value);
-    setDeckId(''); // Reset deck when subject changes
+    setDeckId('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +34,12 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
     if (!front.trim() || !back.trim() || !subjectId) return;
 
     try {
-      await onAdd({ subjectId, front, back, deckId: deckId || undefined });
+      await onAdd({
+        subjectId,
+        front,
+        back,
+        deckId: deckId && deckId !== NO_DECK_VALUE ? deckId : undefined,
+      });
       setOpen(false);
       setFront('');
       setBack('');
@@ -80,12 +87,15 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
           {filteredDecks.length > 0 && (
             <div className="space-y-2">
               <Label>Baralho (opcional)</Label>
-              <Select value={deckId} onValueChange={setDeckId}>
+               <Select
+                 value={deckId || NO_DECK_VALUE}
+                 onValueChange={(value) => setDeckId(value === NO_DECK_VALUE ? '' : value)}
+               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um baralho" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sem baralho</SelectItem>
+                  <SelectItem value={NO_DECK_VALUE}>Sem baralho</SelectItem>
                   {filteredDecks.map((deck) => (
                     <SelectItem key={deck.id} value={deck.id}>
                       {deck.name}

@@ -7,16 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, FileText, Trash2 } from 'lucide-react';
 import { Simulado, Contest, Subject, SubjectDetail } from '@/types/database';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface AddSimuladoDialogProps {
-  onAdd: (simulado: Omit<Simulado, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  onAdd: (simulado: Omit<Simulado, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<unknown> | void;
   contests: Contest[];
   subjects: Subject[];
   editingSimulado?: Simulado | null;
-  onUpdate?: (simulado: Partial<Simulado> & { id: string }) => void;
+  onUpdate?: (simulado: Partial<Simulado> & { id: string }) => Promise<unknown> | void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
+
+const NO_CONTEST_VALUE = 'no-contest';
 
 export function AddSimuladoDialog({ onAdd, contests, subjects, editingSimulado, onUpdate, open, onOpenChange }: AddSimuladoDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
@@ -91,7 +94,15 @@ export function AddSimuladoDialog({ onAdd, contests, subjects, editingSimulado, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      toast.error('Informe o nome do simulado');
+      return;
+    }
+
+    if (subjectDetails.some((detail) => detail.correct_answers > detail.total_questions)) {
+      toast.error('Acertos não podem ser maiores que o total de questões');
+      return;
+    }
 
     try {
       const totals = getTotals();
@@ -115,6 +126,7 @@ export function AddSimuladoDialog({ onAdd, contests, subjects, editingSimulado, 
       setIsOpen(false);
     } catch (error) {
       console.error('Error saving simulado:', error);
+      toast.error('Erro ao salvar simulado');
     }
   };
 
@@ -162,12 +174,15 @@ export function AddSimuladoDialog({ onAdd, contests, subjects, editingSimulado, 
           {contests.length > 0 && (
             <div className="space-y-2">
               <Label>Concurso (opcional)</Label>
-              <Select value={contestId} onValueChange={setContestId}>
+              <Select
+                value={contestId || NO_CONTEST_VALUE}
+                onValueChange={(value) => setContestId(value === NO_CONTEST_VALUE ? '' : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um concurso" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value={NO_CONTEST_VALUE}>Nenhum</SelectItem>
                   {contests.map(contest => (
                     <SelectItem key={contest.id} value={contest.id}>{contest.name}</SelectItem>
                   ))}

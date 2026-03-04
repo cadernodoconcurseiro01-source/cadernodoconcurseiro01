@@ -10,7 +10,7 @@ import { ptBR } from 'date-fns/locale';
 
 const QuestionsPage = () => {
   const { subjects, isLoading: subjectsLoading } = useSubjects();
-  const { dailyQuestions, isLoading: questionsLoading, addOrUpdateDailyQuestions, getTotalStats } = useDailyQuestions();
+  const { dailyQuestions, isLoading: questionsLoading, addOrUpdateDailyQuestionsAsync, getTotalStats } = useDailyQuestions();
   
   const totalStats = getTotalStats();
   const isLoading = subjectsLoading || questionsLoading;
@@ -53,7 +53,7 @@ const QuestionsPage = () => {
               Registre as questões resolvidas por matéria para acompanhar seu desempenho.
             </p>
           </div>
-          <AddDailyQuestionsDialog subjects={subjects} onAdd={addOrUpdateDailyQuestions} />
+          <AddDailyQuestionsDialog subjects={subjects} onAdd={addOrUpdateDailyQuestionsAsync} />
         </div>
       </header>
 
@@ -89,7 +89,7 @@ const QuestionsPage = () => {
           <p className="text-muted-foreground text-sm mb-4">
             Comece a registrar suas questões diárias para acompanhar seu progresso.
           </p>
-          <AddDailyQuestionsDialog subjects={subjects} onAdd={addOrUpdateDailyQuestions} />
+          <AddDailyQuestionsDialog subjects={subjects} onAdd={addOrUpdateDailyQuestionsAsync} />
         </Card>
       ) : (
         <div className="space-y-6">
