@@ -7,7 +7,7 @@ import { Contest } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ContestsPage = () => {
-  const { contests, isLoading, addContest, updateContest, deleteContest } = useContests();
+  const { contests, isLoading, addContestAsync, updateContestAsync, deleteContest } = useContests();
   const [editingContest, setEditingContest] = useState<Contest | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -42,7 +42,7 @@ const ContestsPage = () => {
               Gerencie seus concursos e configure o tipo de plano de estudos.
             </p>
           </div>
-          <AddContestDialog onAdd={addContest} />
+          <AddContestDialog onAdd={addContestAsync} />
         </div>
       </header>
 
@@ -53,9 +53,9 @@ const ContestsPage = () => {
       />
 
       <AddContestDialog
-        onAdd={addContest}
+        onAdd={addContestAsync}
         editingContest={editingContest}
-        onUpdate={updateContest}
+        onUpdate={updateContestAsync}
         open={editDialogOpen}
         onOpenChange={(open) => {
           setEditDialogOpen(open);

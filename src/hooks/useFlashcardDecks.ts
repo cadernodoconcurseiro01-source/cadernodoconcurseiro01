@@ -114,7 +114,10 @@ export function useFlashcardDecks() {
     decks,
     isLoading,
     addDeck: addDeck.mutate,
+    addDeckAsync: addDeck.mutateAsync,
     updateDeck: updateDeck.mutate,
+    updateDeckAsync: updateDeck.mutateAsync,
     deleteDeck: deleteDeck.mutate,
+    deleteDeckAsync: deleteDeck.mutateAsync,
   };
 }

@@ -7,6 +7,7 @@
  import { Plus, HelpCircle } from 'lucide-react';
  import { Subject } from '@/types/database';
  import { format } from 'date-fns';
+ import { toast } from 'sonner';
  
  interface AddDailyQuestionsDialogProps {
    onAdd: (data: { 
@@ -15,7 +16,7 @@
      correct_answers: number; 
      wrong_answers: number;
      question_date?: string;
-   }) => void;
+   }) => Promise<unknown> | void;
    subjects: Subject[];
  }
  
@@ -41,7 +42,20 @@
  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subjectId || totalQuestions === 0) return;
+    if (!subjectId) {
+      toast.error('Selecione uma disciplina');
+      return;
+    }
+
+    if (totalQuestions <= 0) {
+      toast.error('Informe o total de questões');
+      return;
+    }
+
+    if (correctAnswers > totalQuestions || wrongAnswers > totalQuestions) {
+      toast.error('Acertos e erros não podem ser maiores que o total');
+      return;
+    }
 
     try {
       await onAdd({
@@ -56,6 +70,7 @@
       setOpen(false);
     } catch (error) {
       console.error('Error adding questions:', error);
+      toast.error('Erro ao registrar questões');
     }
   };
  

@@ -116,7 +116,9 @@ export function useSimulados() {
     simulados,
     isLoading,
     addSimulado: addSimulado.mutate,
+    addSimuladoAsync: addSimulado.mutateAsync,
     updateSimulado: updateSimulado.mutate,
+    updateSimuladoAsync: updateSimulado.mutateAsync,
     deleteSimulado: deleteSimulado.mutate,
     getStats,
   };

@@ -97,7 +97,9 @@ export function useContests() {
     contests,
     isLoading,
     addContest: addContest.mutate,
+    addContestAsync: addContest.mutateAsync,
     updateContest: updateContest.mutate,
+    updateContestAsync: updateContest.mutateAsync,
     deleteContest: deleteContest.mutate,
   };
 }

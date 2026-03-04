@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 
 const SimuladosPage = () => {
-  const { simulados, isLoading, addSimulado, updateSimulado, deleteSimulado, getStats } = useSimulados();
+  const { simulados, isLoading, addSimuladoAsync, updateSimuladoAsync, deleteSimulado, getStats } = useSimulados();
   const { contests } = useContests();
   const { subjects } = useSubjects();
   const [editingSimulado, setEditingSimulado] = useState<Simulado | null>(null);
@@ -49,7 +49,7 @@ const SimuladosPage = () => {
               Registre e acompanhe seu desempenho nos simulados.
             </p>
           </div>
-          <AddSimuladoDialog onAdd={addSimulado} contests={contests} subjects={subjects} />
+          <AddSimuladoDialog onAdd={addSimuladoAsync} contests={contests} subjects={subjects} />
         </div>
       </header>
 
@@ -109,11 +109,11 @@ const SimuladosPage = () => {
       />
 
       <AddSimuladoDialog
-        onAdd={addSimulado}
+        onAdd={addSimuladoAsync}
         contests={contests}
         subjects={subjects}
         editingSimulado={editingSimulado}
-        onUpdate={updateSimulado}
+        onUpdate={updateSimuladoAsync}
         open={editDialogOpen}
         onOpenChange={(open) => {
           setEditDialogOpen(open);
