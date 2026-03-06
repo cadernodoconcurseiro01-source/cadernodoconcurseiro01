@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -6,11 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { Subject, FlashcardDeck } from '@/types/database';
+import { toast } from 'sonner';
 
 interface AddFlashcardDialogNewProps {
   subjects: Subject[];
   decks?: FlashcardDeck[];
-  onAdd: (params: { subjectId: string; front: string; back: string; deckId?: string }) => Promise<unknown> | void;
+  onAdd: (params: { subjectId: string; front: string; back: string; deckId?: string }) => Promise<unknown>;
 }
 
 const NO_DECK_VALUE = 'no-deck';
@@ -21,8 +22,21 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
   const [deckId, setDeckId] = useState('');
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredDecks = decks.filter(d => d.subject_id === subjectId);
+  useEffect(() => {
+    if (subjects.length === 0) {
+      setSubjectId('');
+      return;
+    }
+
+    const hasValidSubject = subjects.some((subject) => subject.id === subjectId);
+    if (!hasValidSubject) {
+      setSubjectId(subjects[0].id);
+    }
+  }, [subjects, subjectId]);
+
+  const filteredDecks = decks.filter((d) => d.subject_id === subjectId);
 
   const handleSubjectChange = (value: string) => {
     setSubjectId(value);
@@ -31,21 +45,38 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!front.trim() || !back.trim() || !subjectId) return;
+
+    if (!subjectId) {
+      toast.error('Selecione uma matéria antes de criar o flashcard.');
+      return;
+    }
+
+    if (!front.trim() || !back.trim()) {
+      toast.error('Preencha frente e verso do flashcard.');
+      return;
+    }
+
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
 
     try {
       await onAdd({
         subjectId,
-        front,
-        back,
+        front: front.trim(),
+        back: back.trim(),
         deckId: deckId && deckId !== NO_DECK_VALUE ? deckId : undefined,
       });
+
       setOpen(false);
       setFront('');
       setBack('');
       setDeckId('');
     } catch (error) {
       console.error('Error adding flashcard:', error);
+      toast.error('Erro ao criar flashcard. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -72,8 +103,8 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
                 {subjects.map((subject) => (
                   <SelectItem key={subject.id} value={subject.id}>
                     <span className="flex items-center gap-2">
-                      <span 
-                        className="w-3 h-3 rounded-full" 
+                      <span
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: subject.color }}
                       />
                       {subject.name}
@@ -87,10 +118,10 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
           {filteredDecks.length > 0 && (
             <div className="space-y-2">
               <Label>Baralho (opcional)</Label>
-               <Select
-                 value={deckId || NO_DECK_VALUE}
-                 onValueChange={(value) => setDeckId(value === NO_DECK_VALUE ? '' : value)}
-               >
+              <Select
+                value={deckId || NO_DECK_VALUE}
+                onValueChange={(value) => setDeckId(value === NO_DECK_VALUE ? '' : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um baralho" />
                 </SelectTrigger>
@@ -128,11 +159,12 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
             />
           </div>
 
-          <Button type="submit" className="w-full gradient-primary">
-            Criar Flashcard
+          <Button type="submit" className="w-full gradient-primary" disabled={isSubmitting || !subjectId}>
+            {isSubmitting ? 'Criando...' : 'Criar Flashcard'}
           </Button>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
+
