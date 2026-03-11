@@ -17,7 +17,7 @@ const ContestDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { contests, isLoading: contestsLoading } = useContests();
-  const { subjects, addSubjectWithContest, updateSubject, deleteSubject } = useSubjects();
+  const { subjects, addSubjectWithContest, updateSubject, deleteSubject, linkSubjectsToContestAsync } = useSubjects();
   
   const [addSubjectOpen, setAddSubjectOpen] = useState(false);
 
