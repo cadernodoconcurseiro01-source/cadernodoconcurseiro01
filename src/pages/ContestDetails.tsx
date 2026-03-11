@@ -154,11 +154,17 @@ const ContestDetailsPage = () => {
             <BookOpen className="w-5 h-5 text-primary" />
             Matérias do Concurso ({contestSubjects.length})
           </h2>
-          <AddSubjectDialogNew 
-            onAdd={handleAddSubject}
-            open={addSubjectOpen}
-            onOpenChange={setAddSubjectOpen}
-          />
+          <div className="flex items-center gap-2">
+            <LinkExistingSubjectDialog
+              availableSubjects={availableSubjects}
+              onLink={handleLinkExisting}
+            />
+            <AddSubjectDialogNew 
+              onAdd={handleAddSubject}
+              open={addSubjectOpen}
+              onOpenChange={setAddSubjectOpen}
+            />
+          </div>
         </div>
 
         {contestSubjects.length === 0 ? (
