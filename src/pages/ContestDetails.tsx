@@ -38,6 +38,11 @@ const ContestDetailsPage = () => {
     setAddSubjectOpen(false);
   };
 
+  const handleLinkExisting = async (subjectIds: string[]) => {
+    if (!id) return;
+    await linkSubjectsToContestAsync({ subjectIds, contestId: id });
+  };
+
   const formatExamDate = (dateString: string | null) => {
     if (!dateString) return null;
     try {
