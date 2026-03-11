@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, ArrowLeft, Plus, BookOpen, CheckCircle, Circle, RefreshCw, Layers } from 'lucide-react';
+import { Trophy, ArrowLeft, Plus, BookOpen, CheckCircle, RefreshCw, Layers } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useContests } from '@/hooks/useContests';
 import { useSubjects } from '@/hooks/useSubjects';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
+import { LinkExistingSubjectDialog } from '@/components/LinkExistingSubjectDialog';
 import { StudySequenceTable } from '@/components/StudySequenceTable';
 import { format, parseISO, isValid, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -17,12 +17,13 @@ const ContestDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { contests, isLoading: contestsLoading } = useContests();
-  const { subjects, addSubjectWithContest, updateSubject, deleteSubject } = useSubjects();
+  const { subjects, addSubjectWithContest, updateSubject, deleteSubject, linkSubjectsToContestAsync } = useSubjects();
   
   const [addSubjectOpen, setAddSubjectOpen] = useState(false);
 
   const contest = contests.find(c => c.id === id);
   const contestSubjects = subjects.filter(s => s.contest_id === id);
+  const availableSubjects = subjects.filter(s => s.contest_id !== id);
 
   const handleAddSubject = (params: { name: string; color: string; goalMinutes: number; difficulty: DifficultyLevel }) => {
     if (!id) return;
@@ -35,6 +36,11 @@ const ContestDetailsPage = () => {
       contestId: id,
     });
     setAddSubjectOpen(false);
+  };
+
+  const handleLinkExisting = async (subjectIds: string[]) => {
+    if (!id) return;
+    await linkSubjectsToContestAsync({ subjectIds, contestId: id });
   };
 
   const formatExamDate = (dateString: string | null) => {
@@ -148,11 +154,17 @@ const ContestDetailsPage = () => {
             <BookOpen className="w-5 h-5 text-primary" />
             Matérias do Concurso ({contestSubjects.length})
           </h2>
-          <AddSubjectDialogNew 
-            onAdd={handleAddSubject}
-            open={addSubjectOpen}
-            onOpenChange={setAddSubjectOpen}
-          />
+          <div className="flex items-center gap-2">
+            <LinkExistingSubjectDialog
+              availableSubjects={availableSubjects}
+              onLink={handleLinkExisting}
+            />
+            <AddSubjectDialogNew 
+              onAdd={handleAddSubject}
+              open={addSubjectOpen}
+              onOpenChange={setAddSubjectOpen}
+            />
+          </div>
         </div>
 
         {contestSubjects.length === 0 ? (

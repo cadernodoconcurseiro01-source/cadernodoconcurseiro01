@@ -160,6 +160,31 @@ export function useSubjects() {
     },
   });
 
+  const linkSubjectsToContest = useMutation({
+    mutationFn: async ({ subjectIds, contestId }: { subjectIds: string[]; contestId: string }) => {
+      const updates = subjectIds.map(id =>
+        supabase
+          .from('subjects')
+          .update({ contest_id: contestId })
+          .eq('id', id)
+          .select()
+          .single()
+      );
+      const results = await Promise.all(updates);
+      const error = results.find(r => r.error)?.error;
+      if (error) throw error;
+      return results.map(r => r.data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      toast.success('Matérias vinculadas ao concurso!');
+    },
+    onError: (error) => {
+      toast.error('Erro ao vincular matérias');
+      console.error(error);
+    },
+  });
+
   return {
     subjects,
     isLoading,
@@ -169,5 +194,7 @@ export function useSubjects() {
     addSubjectWithContestAsync: addSubjectWithContest.mutateAsync,
     updateSubject: updateSubject.mutate,
     deleteSubject: deleteSubject.mutate,
+    linkSubjectsToContest: linkSubjectsToContest.mutate,
+    linkSubjectsToContestAsync: linkSubjectsToContest.mutateAsync,
   };
 }
