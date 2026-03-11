@@ -23,6 +23,7 @@ const ContestDetailsPage = () => {
 
   const contest = contests.find(c => c.id === id);
   const contestSubjects = subjects.filter(s => s.contest_id === id);
+  const availableSubjects = subjects.filter(s => s.contest_id !== id);
 
   const handleAddSubject = (params: { name: string; color: string; goalMinutes: number; difficulty: DifficultyLevel }) => {
     if (!id) return;
