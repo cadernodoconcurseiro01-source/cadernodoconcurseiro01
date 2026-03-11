@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, ArrowLeft, Plus, BookOpen, CheckCircle, Circle, RefreshCw, Layers } from 'lucide-react';
+import { Trophy, ArrowLeft, Plus, BookOpen, CheckCircle, RefreshCw, Layers } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useContests } from '@/hooks/useContests';
 import { useSubjects } from '@/hooks/useSubjects';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
+import { LinkExistingSubjectDialog } from '@/components/LinkExistingSubjectDialog';
 import { StudySequenceTable } from '@/components/StudySequenceTable';
 import { format, parseISO, isValid, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
