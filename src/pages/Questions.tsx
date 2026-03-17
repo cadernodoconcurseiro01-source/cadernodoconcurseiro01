@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { HelpCircle, Calendar, Pencil, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,17 +6,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
+import { EditDailyQuestionDialog } from '@/components/EditDailyQuestionDialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const QuestionsPage = () => {
   const { subjects, isLoading: subjectsLoading } = useSubjects();
-  const { dailyQuestions, isLoading: questionsLoading, addOrUpdateDailyQuestionsAsync, getTotalStats } = useDailyQuestions();
+  const { dailyQuestions, isLoading: questionsLoading, addOrUpdateDailyQuestionsAsync, updateDailyQuestion, deleteDailyQuestion, getTotalStats } = useDailyQuestions();
   
+  const [editingQuestion, setEditingQuestion] = useState<typeof dailyQuestions[0] | null>(null);
+
   const totalStats = getTotalStats();
   const isLoading = subjectsLoading || questionsLoading;
 
-  // Group questions by date
   const groupedByDate = dailyQuestions.reduce((acc, q) => {
     const date = q.question_date;
     if (!acc[date]) acc[date] = [];
@@ -97,7 +101,6 @@ const QuestionsPage = () => {
             const questions = groupedByDate[date];
             const dateTotal = questions.reduce((sum, q) => sum + q.total_questions, 0);
             const dateCorrect = questions.reduce((sum, q) => sum + q.correct_answers, 0);
-            const dateWrong = questions.reduce((sum, q) => sum + q.wrong_answers, 0);
             const datePercentage = dateTotal > 0 ? Math.round((dateCorrect / dateTotal) * 100) : 0;
             
             return (
@@ -146,6 +149,38 @@ const QuestionsPage = () => {
                           <span className="font-medium text-warning">
                             {percentage}%
                           </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setEditingQuestion(q)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir registro?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir este registro de questões de {subject?.name}? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => deleteDailyQuestion(q.id)}
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     );
@@ -155,6 +190,16 @@ const QuestionsPage = () => {
             );
           })}
         </div>
+      )}
+
+      {editingQuestion && (
+        <EditDailyQuestionDialog
+          open={!!editingQuestion}
+          onOpenChange={(open) => !open && setEditingQuestion(null)}
+          question={editingQuestion}
+          subjectName={subjects.find(s => s.id === editingQuestion.subject_id)?.name || 'Matéria'}
+          onSave={updateDailyQuestion}
+        />
       )}
     </div>
   );
