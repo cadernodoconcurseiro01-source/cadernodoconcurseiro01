@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useAvatarUrl } from '@/hooks/useAvatarUrl';
 import logo from '@/assets/logo.png';
 
 const navItems = [
