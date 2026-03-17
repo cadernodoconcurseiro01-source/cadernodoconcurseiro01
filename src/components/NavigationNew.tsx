@@ -43,7 +43,7 @@ export function NavigationNew() {
   };
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || null;
-  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
+  const avatarUrl = useAvatarUrl(profile?.avatar_url || user?.user_metadata?.avatar_url || null);
 
   return (
     <nav className="sticky top-0 z-50 glass border-b">
