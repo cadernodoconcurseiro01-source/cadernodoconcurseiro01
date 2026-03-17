@@ -35,8 +35,23 @@ const ProfilePage = () => {
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user?.id}/${Math.random()}.${fileExt}`;
+
+      // Validate file type
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        toast.error('Tipo de arquivo não permitido. Use JPEG, PNG, GIF ou WebP.');
+        return;
+      }
+
+      // Validate file size (max 2MB)
+      const MAX_SIZE = 2 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        toast.error('Arquivo muito grande (máximo 2 MB).');
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      const filePath = `${user?.id}/${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
