@@ -79,7 +79,7 @@ const ProfilePage = () => {
       setSaving(true);
       await updateProfile({
         display_name: displayName || null,
-        avatar_url: avatarUrl,
+        avatar_url: avatarPath,
       });
       toast.success('Perfil atualizado!');
     } catch (error) {
