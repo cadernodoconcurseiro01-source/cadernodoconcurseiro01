@@ -5,15 +5,14 @@ import { Button } from '@/components/ui/button';
 import { PomodoroTimerNew } from '@/components/PomodoroTimerNew';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
 import { SubjectProgressNew } from '@/components/SubjectProgressNew';
-import { StudyCycleCard } from '@/components/StudyCycleCard';
+import { DashboardStudySchedule } from '@/components/DashboardStudySchedule';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useSessions } from '@/hooks/useSessions';
 import { useFlashcards } from '@/hooks/useFlashcards';
 import { useTimerSettings } from '@/hooks/useTimerSettings';
-import { useStudyCycle } from '@/hooks/useStudyCycle';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Subject } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 
