@@ -16,7 +16,8 @@ const ProfilePage = () => {
   const { profile, isLoading, updateProfile } = useProfile();
   
   const [displayName, setDisplayName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const resolvedAvatarUrl = useAvatarUrl(avatarPath);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
