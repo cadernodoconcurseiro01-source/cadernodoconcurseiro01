@@ -184,13 +184,15 @@
      return { total, correct, wrong, percentage };
    };
  
-    return {
-      dailyQuestions,
-      isLoading,
-      addOrUpdateDailyQuestions: addOrUpdateDailyQuestions.mutate,
-      addOrUpdateDailyQuestionsAsync: addOrUpdateDailyQuestions.mutateAsync,
-      getWeeklyStats,
-      getBySubject,
-      getTotalStats,
-    };
+     return {
+       dailyQuestions,
+       isLoading,
+       addOrUpdateDailyQuestions: addOrUpdateDailyQuestions.mutate,
+       addOrUpdateDailyQuestionsAsync: addOrUpdateDailyQuestions.mutateAsync,
+       updateDailyQuestion: updateDailyQuestion.mutateAsync,
+       deleteDailyQuestion: deleteDailyQuestion.mutateAsync,
+       getWeeklyStats,
+       getBySubject,
+       getTotalStats,
+     };
  }
