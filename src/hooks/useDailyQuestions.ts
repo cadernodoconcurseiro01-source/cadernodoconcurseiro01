@@ -87,7 +87,53 @@
      onError: (error) => {
        toast.error('Erro ao registrar questões');
        console.error(error);
-     },
+    },
+  });
+
+  const updateDailyQuestion = useMutation({
+    mutationFn: async (data: {
+      id: string;
+      total_questions: number;
+      correct_answers: number;
+      wrong_answers: number;
+    }) => {
+      const { data: updated, error } = await supabase
+        .from('daily_questions')
+        .update({
+          total_questions: data.total_questions,
+          correct_answers: data.correct_answers,
+          wrong_answers: data.wrong_answers,
+        })
+        .eq('id', data.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return updated;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['daily-questions'] });
+      toast.success('Questão atualizada!');
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar questão');
+    },
+  });
+
+  const deleteDailyQuestion = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('daily_questions')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['daily-questions'] });
+      toast.success('Questão excluída!');
+    },
+    onError: () => {
+      toast.error('Erro ao excluir questão');
+    },
    });
  
    const getWeeklyStats = (subjects: Subject[]) => {
