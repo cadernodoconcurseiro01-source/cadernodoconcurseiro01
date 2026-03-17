@@ -155,12 +155,7 @@ const Dashboard = () => {
               Estudos
             </h2>
           </div>
-          <StudyCycleCard 
-            schedule={schedule}
-            cycle={cycle}
-            onUpdateCycle={updateCycle}
-            onRefreshSchedule={handleRefreshSchedule}
-          />
+          <DashboardStudySchedule subjects={subjects} />
         </section>
 
         {/* Subject Progress */}
