@@ -5,15 +5,14 @@ import { Button } from '@/components/ui/button';
 import { PomodoroTimerNew } from '@/components/PomodoroTimerNew';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
 import { SubjectProgressNew } from '@/components/SubjectProgressNew';
-import { StudyCycleCard } from '@/components/StudyCycleCard';
+import { DashboardStudySchedule } from '@/components/DashboardStudySchedule';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useSessions } from '@/hooks/useSessions';
 import { useFlashcards } from '@/hooks/useFlashcards';
 import { useTimerSettings } from '@/hooks/useTimerSettings';
-import { useStudyCycle } from '@/hooks/useStudyCycle';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Subject } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -24,19 +23,11 @@ const Dashboard = () => {
   const { getStats, addSession } = useSessions();
   const { flashcardsDueToday } = useFlashcards();
   const { settings, updateSettings } = useTimerSettings();
-  const { cycle, updateCycle, getTodaySchedule } = useStudyCycle(subjects);
   
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [schedule, setSchedule] = useState<ReturnType<typeof getTodaySchedule>>([]);
   
   const stats = getStats();
-
-  useEffect(() => {
-    if (subjects.length > 0) {
-      setSchedule(getTodaySchedule());
-    }
-  }, [subjects, cycle]);
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -60,9 +51,7 @@ const Dashboard = () => {
     setEditDialogOpen(true);
   };
 
-  const handleRefreshSchedule = () => {
-    setSchedule(getTodaySchedule());
-  };
+
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || '';
 
@@ -166,12 +155,7 @@ const Dashboard = () => {
               Estudos
             </h2>
           </div>
-          <StudyCycleCard 
-            schedule={schedule}
-            cycle={cycle}
-            onUpdateCycle={updateCycle}
-            onRefreshSchedule={handleRefreshSchedule}
-          />
+          <DashboardStudySchedule subjects={subjects} />
         </section>
 
         {/* Subject Progress */}
