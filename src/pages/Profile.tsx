@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useAvatarUrl } from '@/hooks/useAvatarUrl';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,14 +16,15 @@ const ProfilePage = () => {
   const { profile, isLoading, updateProfile } = useProfile();
   
   const [displayName, setDisplayName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const resolvedAvatarUrl = useAvatarUrl(avatarPath);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name || '');
-      setAvatarUrl(profile.avatar_url || null);
+      setAvatarPath(profile.avatar_url || null);
     }
   }, [profile]);
 
@@ -61,11 +63,8 @@ const ProfilePage = () => {
         throw uploadError;
       }
 
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      setAvatarUrl(data.publicUrl);
+      // Store the path, not the public URL — bucket is private
+      setAvatarPath(filePath);
       toast.success('Foto atualizada!');
     } catch (error) {
       console.error('Error uploading avatar:', error);
@@ -80,7 +79,7 @@ const ProfilePage = () => {
       setSaving(true);
       await updateProfile({
         display_name: displayName || null,
-        avatar_url: avatarUrl,
+        avatar_url: avatarPath,
       });
       toast.success('Perfil atualizado!');
     } catch (error) {
@@ -134,7 +133,7 @@ const ProfilePage = () => {
         <div className="flex flex-col items-center mb-8">
           <div className="relative group">
             <Avatar className="h-32 w-32 border-4 border-primary/20">
-              <AvatarImage src={avatarUrl || undefined} />
+              <AvatarImage src={resolvedAvatarUrl || undefined} />
               <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                 {getInitials(displayName, user?.email || 'US')}
               </AvatarFallback>
