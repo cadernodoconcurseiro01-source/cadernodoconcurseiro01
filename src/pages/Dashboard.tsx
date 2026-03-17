@@ -51,9 +51,7 @@ const Dashboard = () => {
     setEditDialogOpen(true);
   };
 
-  const handleRefreshSchedule = () => {
-    setSchedule(getTodaySchedule());
-  };
+
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || '';
 
