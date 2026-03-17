@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useAvatarUrl } from '@/hooks/useAvatarUrl';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
