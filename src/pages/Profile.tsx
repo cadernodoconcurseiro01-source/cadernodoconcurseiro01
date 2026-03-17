@@ -133,7 +133,7 @@ const ProfilePage = () => {
         <div className="flex flex-col items-center mb-8">
           <div className="relative group">
             <Avatar className="h-32 w-32 border-4 border-primary/20">
-              <AvatarImage src={avatarUrl || undefined} />
+              <AvatarImage src={resolvedAvatarUrl || undefined} />
               <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                 {getInitials(displayName, user?.email || 'US')}
               </AvatarFallback>
