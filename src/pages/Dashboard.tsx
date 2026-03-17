@@ -23,19 +23,11 @@ const Dashboard = () => {
   const { getStats, addSession } = useSessions();
   const { flashcardsDueToday } = useFlashcards();
   const { settings, updateSettings } = useTimerSettings();
-  const { cycle, updateCycle, getTodaySchedule } = useStudyCycle(subjects);
   
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [schedule, setSchedule] = useState<ReturnType<typeof getTodaySchedule>>([]);
   
   const stats = getStats();
-
-  useEffect(() => {
-    if (subjects.length > 0) {
-      setSchedule(getTodaySchedule());
-    }
-  }, [subjects, cycle]);
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
