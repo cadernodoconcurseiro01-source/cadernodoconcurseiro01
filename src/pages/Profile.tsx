@@ -24,7 +24,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name || '');
-      setAvatarUrl(profile.avatar_url || null);
+      setAvatarPath(profile.avatar_url || null);
     }
   }, [profile]);
 
