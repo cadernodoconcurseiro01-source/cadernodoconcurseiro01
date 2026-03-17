@@ -61,11 +61,8 @@ const ProfilePage = () => {
         throw uploadError;
       }
 
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      setAvatarUrl(data.publicUrl);
+      // Store the path, not the public URL — bucket is private
+      setAvatarUrl(filePath);
       toast.success('Foto atualizada!');
     } catch (error) {
       console.error('Error uploading avatar:', error);
