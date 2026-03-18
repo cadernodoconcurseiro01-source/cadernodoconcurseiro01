@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Trophy, HelpCircle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Subject, Contest, StudyScheduleItem, DifficultyLevel } from '@/types/database';
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
 import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
 import { useContests } from '@/hooks/useContests';
 import { useSimulados } from '@/hooks/useSimulados';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
+import { useStudyCompletion } from '@/hooks/useStudyCompletion';
 
 const periodConfig = {
   morning: { icon: Sun, label: 'Manhã', time: '06:00 - 12:00' },
@@ -91,19 +92,8 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { addSimuladoAsync } = useSimulados();
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
 
-  const [completedItems, setCompletedItems] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('study-schedule-completed');
-      const parsed = saved ? JSON.parse(saved) : {};
-      const today = new Date().toDateString();
-      if (parsed.date === today) {
-        return new Set(parsed.items as string[]);
-      }
-    } catch { /* ignore */ }
-    return new Set<string>();
-  });
+  const { completedItems, toggleComplete } = useStudyCompletion();
 
-  // Get last added contest (first in array since ordered by created_at desc)
   const lastContest = useMemo(() => {
     return contests.find(c => c.is_active) || contests[0] || null;
   }, [contests]);
@@ -117,26 +107,6 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
     if (!lastContest || contestSubjects.length === 0) return [];
     return generateScheduleFromContest(contestSubjects, lastContest);
   }, [lastContest, contestSubjects]);
-
-  useEffect(() => {
-    const today = new Date().toDateString();
-    localStorage.setItem('study-schedule-completed', JSON.stringify({
-      date: today,
-      items: Array.from(completedItems),
-    }));
-  }, [completedItems]);
-
-  const toggleComplete = (subjectId: string) => {
-    setCompletedItems(prev => {
-      const next = new Set(prev);
-      if (next.has(subjectId)) {
-        next.delete(subjectId);
-      } else {
-        next.add(subjectId);
-      }
-      return next;
-    });
-  };
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
