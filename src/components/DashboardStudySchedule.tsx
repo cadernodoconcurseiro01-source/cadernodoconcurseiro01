@@ -35,8 +35,8 @@ function generateScheduleFromContest(
   const currentDay = contest.cycle_number || 1;
   const dayIndex = (currentDay - 1) % cycleDays;
 
-  // Distribute subjects across cycle days
-  const subjectsPerDay = Math.max(1, Math.ceil(subjects.length / cycleDays));
+  // Use the contest's subjects_per_day setting
+  const subjectsPerDay = Math.min(contest.subjects_per_day || 1, subjects.length);
   const startIdx = (dayIndex * subjectsPerDay) % subjects.length;
 
   const todaySubjects: Subject[] = [];
