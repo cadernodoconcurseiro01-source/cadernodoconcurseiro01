@@ -80,9 +80,9 @@ export function StudySequenceTable({ subjects, cycleDays, planType, subjectsPerD
 
   // Generate sequence on mount or when subjects change
   useEffect(() => {
-    const newSequence = generateSequence(subjects, cycleDays, planType);
+    const newSequence = generateSequence(subjects, cycleDays, planType, subjectsPerDay);
     setSequence(newSequence);
-  }, [subjects, cycleDays, planType]);
+  }, [subjects, cycleDays, planType, subjectsPerDay]);
 
   // Load completed state from localStorage
   useEffect(() => {

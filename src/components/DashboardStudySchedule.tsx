@@ -78,7 +78,7 @@ function generateScheduleFromContest(
     color: subject.color,
     difficulty: subject.difficulty,
     durationMinutes: subject.goal_minutes || minutesPerSubject,
-    period: periods[index] || 'evening',
+    period: availablePeriods[index % availablePeriods.length] as 'morning' | 'afternoon' | 'evening',
   }));
 }
 
