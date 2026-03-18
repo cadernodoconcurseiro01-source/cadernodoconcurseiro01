@@ -74,7 +74,7 @@ const generateSequence = (subjects: Subject[], cycleDays: number, planType: Stud
 
 const STORAGE_KEY_PREFIX = 'study_sequence_completed_';
 
-export function StudySequenceTable({ subjects, cycleDays, planType }: StudySequenceTableProps) {
+export function StudySequenceTable({ subjects, cycleDays, planType, subjectsPerDay = 1 }: StudySequenceTableProps) {
   const [sequence, setSequence] = useState<SequenceItem[]>([]);
   const [completed, setCompleted] = useState<Set<number>>(new Set());
 
