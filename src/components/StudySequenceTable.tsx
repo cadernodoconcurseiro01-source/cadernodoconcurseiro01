@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Subject, DifficultyLevel, StudyPlanType } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { useStudyCompletion } from '@/hooks/useStudyCompletion';
 
 interface StudySequenceTableProps {
   subjects: Subject[];

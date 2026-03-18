@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Trophy, HelpCircle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Subject, Contest, StudyScheduleItem, DifficultyLevel } from '@/types/database';
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
 import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
