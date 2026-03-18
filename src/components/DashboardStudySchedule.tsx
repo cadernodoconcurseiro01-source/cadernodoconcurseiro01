@@ -12,6 +12,7 @@ import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
 import { useContests } from '@/hooks/useContests';
 import { useSimulados } from '@/hooks/useSimulados';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
+import { useStudyCompletion } from '@/hooks/useStudyCompletion';
 
 const periodConfig = {
   morning: { icon: Sun, label: 'Manhã', time: '06:00 - 12:00' },
