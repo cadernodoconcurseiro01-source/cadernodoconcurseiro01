@@ -12,6 +12,7 @@ interface StudySequenceTableProps {
   cycleDays: number;
   planType: StudyPlanType;
   subjectsPerDay?: number;
+  currentDay?: number;
 }
 
 interface SequenceItem {
@@ -73,45 +74,18 @@ const generateSequence = (subjects: Subject[], cycleDays: number, planType: Stud
   return sequence;
 };
 
-const STORAGE_KEY_PREFIX = 'study_sequence_completed_';
+export function StudySequenceTable({ subjects, cycleDays, planType, subjectsPerDay = 1, currentDay = 1 }: StudySequenceTableProps) {
+  const sequence = useMemo(() => 
+    generateSequence(subjects, cycleDays, planType, subjectsPerDay),
+    [subjects, cycleDays, planType, subjectsPerDay]
+  );
 
-export function StudySequenceTable({ subjects, cycleDays, planType, subjectsPerDay = 1 }: StudySequenceTableProps) {
-  const [sequence, setSequence] = useState<SequenceItem[]>([]);
-  const [completed, setCompleted] = useState<Set<number>>(new Set());
+  const { completedItems, toggleComplete } = useStudyCompletion();
 
-  // Generate sequence on mount or when subjects change
-  useEffect(() => {
-    const newSequence = generateSequence(subjects, cycleDays, planType, subjectsPerDay);
-    setSequence(newSequence);
-  }, [subjects, cycleDays, planType, subjectsPerDay]);
-
-  // Load completed state from localStorage
-  useEffect(() => {
-    const storageKey = `${STORAGE_KEY_PREFIX}${subjects.map(s => s.id).sort().join('_')}`;
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setCompleted(new Set(parsed));
-      } catch (e) {
-        console.error('Error loading completed state:', e);
-      }
-    }
-  }, [subjects]);
-
-  // Save completed state to localStorage
-  const toggleCompleted = (day: number) => {
-    const newCompleted = new Set(completed);
-    if (newCompleted.has(day)) {
-      newCompleted.delete(day);
-    } else {
-      newCompleted.add(day);
-    }
-    setCompleted(newCompleted);
-    
-    const storageKey = `${STORAGE_KEY_PREFIX}${subjects.map(s => s.id).sort().join('_')}`;
-    localStorage.setItem(storageKey, JSON.stringify([...newCompleted]));
-  };
+  // Items for the current day (today) — these sync with Dashboard
+  const todaySubjectIds = useMemo(() => {
+    return new Set(sequence.filter(item => item.day === currentDay).map(item => item.subject.id));
+  }, [sequence, currentDay]);
 
   const getDifficultyBadge = (difficulty: DifficultyLevel) => {
     const variants: Record<DifficultyLevel, { label: string; className: string }> = {
@@ -127,7 +101,21 @@ export function StudySequenceTable({ subjects, cycleDays, planType, subjectsPerD
     );
   };
 
-  const completedCount = sequence.filter((_, i) => completed.has(i + 1)).length;
+  const isItemCompleted = (item: SequenceItem) => {
+    // For today's items, use the shared completion state
+    if (item.day === currentDay) {
+      return completedItems.has(item.subject.id);
+    }
+    return false;
+  };
+
+  const handleToggle = (item: SequenceItem) => {
+    if (item.day === currentDay) {
+      toggleComplete(item.subject.id);
+    }
+  };
+
+  const completedCount = sequence.filter(item => isItemCompleted(item)).length;
   const progress = sequence.length > 0 ? Math.round((completedCount / sequence.length) * 100) : 0;
 
   if (sequence.length === 0) {
@@ -163,24 +151,31 @@ export function StudySequenceTable({ subjects, cycleDays, planType, subjectsPerD
         </TableHeader>
         <TableBody>
           {sequence.map((item, index) => {
-            const isCompleted = completed.has(index + 1);
+            const isCompleted = isItemCompleted(item);
+            const isToday = item.day === currentDay;
             return (
               <TableRow 
                 key={`${item.day}-${item.subject.id}`}
-                className={cn(isCompleted && "bg-muted/50")}
+                className={cn(
+                  isCompleted && "bg-muted/50",
+                  isToday && "border-l-2 border-l-primary"
+                )}
               >
                 <TableCell>
                   <Checkbox
                     checked={isCompleted}
-                    onCheckedChange={() => toggleCompleted(index + 1)}
+                    onCheckedChange={() => handleToggle(item)}
+                    disabled={!isToday}
                   />
                 </TableCell>
                 <TableCell>
                   <span className={cn(
                     "font-medium",
-                    isCompleted && "text-muted-foreground line-through"
+                    isCompleted && "text-muted-foreground line-through",
+                    isToday && "text-primary font-semibold"
                   )}>
                     Dia {item.day}
+                    {isToday && " (Hoje)"}
                   </span>
                 </TableCell>
                 <TableCell>
