@@ -20,53 +20,52 @@ interface SequenceItem {
 }
 
 // Generate study sequence based on difficulty and plan type
-const generateSequence = (subjects: Subject[], cycleDays: number, planType: StudyPlanType): SequenceItem[] => {
+const generateSequence = (subjects: Subject[], cycleDays: number, planType: StudyPlanType, subjectsPerDay: number = 1): SequenceItem[] => {
   if (subjects.length === 0) return [];
 
-  // Sort subjects by difficulty for morning prioritization
   const sortedByDifficulty = [...subjects].sort((a, b) => {
     const diffOrder: Record<DifficultyLevel, number> = { high: 0, medium: 1, low: 2 };
     return diffOrder[a.difficulty] - diffOrder[b.difficulty];
   });
 
   const sequence: SequenceItem[] = [];
+  const perDay = Math.min(subjectsPerDay, subjects.length);
   
   if (planType === 'cycle') {
-    // Cycle: rotate through subjects
     for (let day = 1; day <= cycleDays; day++) {
-      const subjectIndex = (day - 1) % subjects.length;
-      sequence.push({
-        day,
-        subject: sortedByDifficulty[subjectIndex],
-        completed: false,
-      });
+      for (let s = 0; s < perDay; s++) {
+        const subjectIndex = ((day - 1) * perDay + s) % subjects.length;
+        sequence.push({
+          day,
+          subject: sortedByDifficulty[subjectIndex],
+          completed: false,
+        });
+      }
     }
   } else {
-    // Plan: distribute subjects to avoid consecutive high difficulty
-    let lastDifficulty: DifficultyLevel | null = null;
     let subjectPool = [...sortedByDifficulty];
+    let lastDifficulty: DifficultyLevel | null = null;
     
     for (let day = 1; day <= cycleDays; day++) {
-      if (subjectPool.length === 0) {
-        subjectPool = [...sortedByDifficulty];
-      }
-      
-      // Try to avoid consecutive high difficulty subjects
-      let selectedIndex = 0;
-      if (lastDifficulty === 'high') {
-        const nonHighIndex = subjectPool.findIndex(s => s.difficulty !== 'high');
-        if (nonHighIndex !== -1) {
-          selectedIndex = nonHighIndex;
+      for (let s = 0; s < perDay; s++) {
+        if (subjectPool.length === 0) {
+          subjectPool = [...sortedByDifficulty];
         }
+        
+        let selectedIndex = 0;
+        if (lastDifficulty === 'high') {
+          const nonHighIndex = subjectPool.findIndex(sub => sub.difficulty !== 'high');
+          if (nonHighIndex !== -1) selectedIndex = nonHighIndex;
+        }
+        
+        const selected = subjectPool.splice(selectedIndex, 1)[0];
+        sequence.push({
+          day,
+          subject: selected,
+          completed: false,
+        });
+        lastDifficulty = selected.difficulty;
       }
-      
-      const selected = subjectPool.splice(selectedIndex, 1)[0];
-      sequence.push({
-        day,
-        subject: selected,
-        completed: false,
-      });
-      lastDifficulty = selected.difficulty;
     }
   }
 
