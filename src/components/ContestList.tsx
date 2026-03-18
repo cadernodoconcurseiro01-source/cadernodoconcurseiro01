@@ -136,7 +136,7 @@ export function ContestList({ contests, onEdit, onDelete }: ContestListProps) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Excluir concurso?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta ação não pode ser desfeita. Todas as matérias vinculadas a este concurso também serão removidas.
+                        Esta ação não pode ser desfeita. As matérias vinculadas serão desvinculadas, mas não excluídas.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
