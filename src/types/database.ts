@@ -94,6 +94,8 @@ export interface StudyScheduleItem {
   period: 'morning' | 'afternoon' | 'evening';
 }
 
+export type StudyPeriod = 'morning' | 'afternoon' | 'evening';
+
 export interface Contest {
   id: string;
   user_id: string;
@@ -102,6 +104,8 @@ export interface Contest {
   study_plan_type: StudyPlanType;
   cycle_days: number;
   cycle_number: number;
+  subjects_per_day: number;
+  study_periods: StudyPeriod[];
   is_active: boolean;
   created_at: string;
   updated_at: string;

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Contest, StudyPlanType } from '@/types/database';
+import { Contest, StudyPlanType, StudyPeriod } from '@/types/database';
 import { toast } from 'sonner';
 
 export function useContests() {
@@ -23,7 +23,8 @@ export function useContests() {
       // Map study_plan_type from DB to our type
       return (data || []).map(item => ({
         ...item,
-        study_plan_type: (item.study_plan_type === 'injected' ? 'plan' : item.study_plan_type) as StudyPlanType
+        study_plan_type: (item.study_plan_type === 'injected' ? 'plan' : item.study_plan_type) as StudyPlanType,
+        study_periods: (item.study_periods || ['morning', 'afternoon', 'evening']) as StudyPeriod[],
       })) as Contest[];
     },
   });
