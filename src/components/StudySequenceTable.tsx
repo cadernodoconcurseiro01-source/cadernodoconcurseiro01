@@ -10,6 +10,7 @@ interface StudySequenceTableProps {
   subjects: Subject[];
   cycleDays: number;
   planType: StudyPlanType;
+  subjectsPerDay?: number;
 }
 
 interface SequenceItem {
