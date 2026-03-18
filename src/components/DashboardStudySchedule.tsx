@@ -65,7 +65,10 @@ function generateScheduleFromContest(
     }
   }
 
-  const periods: ('morning' | 'afternoon' | 'evening')[] = ['morning', 'afternoon', 'evening', 'evening'];
+  // Use contest's study_periods setting
+  const availablePeriods = contest.study_periods && contest.study_periods.length > 0 
+    ? contest.study_periods 
+    : ['morning', 'afternoon', 'evening'] as const;
   const totalMinutes = 4 * 60; // default 4h
   const minutesPerSubject = Math.floor(totalMinutes / reordered.length);
 
