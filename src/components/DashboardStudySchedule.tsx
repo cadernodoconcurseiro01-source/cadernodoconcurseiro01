@@ -92,52 +92,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { addSimuladoAsync } = useSimulados();
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
 
-  const [completedItems, setCompletedItems] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('study-schedule-completed');
-      const parsed = saved ? JSON.parse(saved) : {};
-      const today = new Date().toDateString();
-      if (parsed.date === today) {
-        return new Set(parsed.items as string[]);
-      }
-    } catch { /* ignore */ }
-    return new Set<string>();
-  });
-
-  // Get last added contest (first in array since ordered by created_at desc)
-  const lastContest = useMemo(() => {
-    return contests.find(c => c.is_active) || contests[0] || null;
-  }, [contests]);
-
-  const contestSubjects = useMemo(() => {
-    if (!lastContest) return [];
-    return subjects.filter(s => s.contest_id === lastContest.id);
-  }, [subjects, lastContest]);
-
-  const schedule = useMemo(() => {
-    if (!lastContest || contestSubjects.length === 0) return [];
-    return generateScheduleFromContest(contestSubjects, lastContest);
-  }, [lastContest, contestSubjects]);
-
-  useEffect(() => {
-    const today = new Date().toDateString();
-    localStorage.setItem('study-schedule-completed', JSON.stringify({
-      date: today,
-      items: Array.from(completedItems),
-    }));
-  }, [completedItems]);
-
-  const toggleComplete = (subjectId: string) => {
-    setCompletedItems(prev => {
-      const next = new Set(prev);
-      if (next.has(subjectId)) {
-        next.delete(subjectId);
-      } else {
-        next.add(subjectId);
-      }
-      return next;
-    });
-  };
+  const { completedItems, toggleComplete } = useStudyCompletion();
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
