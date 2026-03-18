@@ -4,8 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trophy } from 'lucide-react';
-import { Contest, StudyPlanType } from '@/types/database';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Trophy, Sun, Sunset, Moon } from 'lucide-react';
+import { Contest, StudyPlanType, StudyPeriod } from '@/types/database';
 import { toast } from 'sonner';
 
 interface AddContestDialogProps {
@@ -16,6 +17,12 @@ interface AddContestDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+const PERIOD_OPTIONS: { value: StudyPeriod; label: string; icon: typeof Sun }[] = [
+  { value: 'morning', label: 'Manhã', icon: Sun },
+  { value: 'afternoon', label: 'Tarde', icon: Sunset },
+  { value: 'evening', label: 'Noite', icon: Moon },
+];
+
 export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpenChange }: AddContestDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState('');
@@ -23,6 +30,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
   const [studyPlanType, setStudyPlanType] = useState<StudyPlanType>('cycle');
   const [cycleDays, setCycleDays] = useState(7);
   const [cycleNumber, setCycleNumber] = useState(1);
+  const [subjectsPerDay, setSubjectsPerDay] = useState(4);
+  const [studyPeriods, setStudyPeriods] = useState<StudyPeriod[]>(['morning', 'afternoon', 'evening']);
 
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
@@ -35,8 +44,20 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
       setStudyPlanType(editingContest.study_plan_type);
       setCycleDays(editingContest.cycle_days);
       setCycleNumber(editingContest.cycle_number);
+      setSubjectsPerDay(editingContest.subjects_per_day ?? 4);
+      setStudyPeriods(editingContest.study_periods ?? ['morning', 'afternoon', 'evening']);
     }
   }, [editingContest]);
+
+  const togglePeriod = (period: StudyPeriod) => {
+    setStudyPeriods(prev => {
+      if (prev.includes(period)) {
+        if (prev.length === 1) return prev; // keep at least one
+        return prev.filter(p => p !== period);
+      }
+      return [...prev, period];
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +74,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
         study_plan_type: safeStudyPlanType,
         cycle_days: Math.max(1, cycleDays || 7),
         cycle_number: Math.max(1, cycleNumber || 1),
+        subjects_per_day: Math.max(1, subjectsPerDay || 4),
+        study_periods: studyPeriods,
         is_active: true,
       };
 
@@ -77,6 +100,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
       setStudyPlanType('cycle');
       setCycleDays(7);
       setCycleNumber(1);
+      setSubjectsPerDay(4);
+      setStudyPeriods(['morning', 'afternoon', 'evening']);
     }
   };
 
@@ -131,10 +156,52 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              {studyPlanType === 'cycle' 
+              {studyPlanType === 'cycle'
                 ? 'O ciclo repete as matérias de forma rotativa.'
                 : 'O plano distribui as matérias em dias fixos.'
               }
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="subjectsPerDay">Disciplinas por dia</Label>
+            <Input
+              id="subjectsPerDay"
+              type="number"
+              min={1}
+              max={20}
+              value={subjectsPerDay}
+              onChange={(e) => setSubjectsPerDay(Number(e.target.value))}
+            />
+            <p className="text-xs text-muted-foreground">
+              Quantas disciplinas estudar por dia
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Períodos de Estudo</Label>
+            <div className="flex gap-2">
+              {PERIOD_OPTIONS.map(({ value, label, icon: Icon }) => {
+                const isSelected = studyPeriods.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => togglePeriod(value)}
+                    className={`flex-1 flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-muted bg-muted/30 text-muted-foreground hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-xs font-medium">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Selecione os períodos em que você estuda
             </p>
           </div>
 
