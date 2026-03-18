@@ -35,8 +35,8 @@ function generateScheduleFromContest(
   const currentDay = contest.cycle_number || 1;
   const dayIndex = (currentDay - 1) % cycleDays;
 
-  // Distribute subjects across cycle days
-  const subjectsPerDay = Math.max(1, Math.ceil(subjects.length / cycleDays));
+  // Use the contest's subjects_per_day setting
+  const subjectsPerDay = Math.min(contest.subjects_per_day || 1, subjects.length);
   const startIdx = (dayIndex * subjectsPerDay) % subjects.length;
 
   const todaySubjects: Subject[] = [];
@@ -65,7 +65,10 @@ function generateScheduleFromContest(
     }
   }
 
-  const periods: ('morning' | 'afternoon' | 'evening')[] = ['morning', 'afternoon', 'evening', 'evening'];
+  // Use contest's study_periods setting
+  const availablePeriods = contest.study_periods && contest.study_periods.length > 0 
+    ? contest.study_periods 
+    : ['morning', 'afternoon', 'evening'] as const;
   const totalMinutes = 4 * 60; // default 4h
   const minutesPerSubject = Math.floor(totalMinutes / reordered.length);
 
@@ -75,7 +78,7 @@ function generateScheduleFromContest(
     color: subject.color,
     difficulty: subject.difficulty,
     durationMinutes: subject.goal_minutes || minutesPerSubject,
-    period: periods[index] || 'evening',
+    period: availablePeriods[index % availablePeriods.length] as 'morning' | 'afternoon' | 'evening',
   }));
 }
 

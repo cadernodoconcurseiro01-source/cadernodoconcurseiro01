@@ -217,6 +217,7 @@ const ContestDetailsPage = () => {
             subjects={contestSubjects} 
             cycleDays={contest.cycle_days || 7}
             planType={contest.study_plan_type}
+            subjectsPerDay={contest.subjects_per_day || 1}
           />
         </section>
       )}
