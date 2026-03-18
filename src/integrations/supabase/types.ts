@@ -23,7 +23,9 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          study_periods: string[]
           study_plan_type: string
+          subjects_per_day: number
           updated_at: string
           user_id: string
         }
@@ -35,7 +37,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          study_periods?: string[]
           study_plan_type?: string
+          subjects_per_day?: number
           updated_at?: string
           user_id: string
         }
@@ -47,7 +51,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          study_periods?: string[]
           study_plan_type?: string
+          subjects_per_day?: number
           updated_at?: string
           user_id?: string
         }

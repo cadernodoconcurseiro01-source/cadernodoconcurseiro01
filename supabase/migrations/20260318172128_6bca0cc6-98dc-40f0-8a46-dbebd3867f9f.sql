@@ -1,0 +1,2 @@
+ALTER TABLE public.contests ADD COLUMN subjects_per_day integer NOT NULL DEFAULT 4;
+ALTER TABLE public.contests ADD COLUMN study_periods text[] NOT NULL DEFAULT ARRAY['morning', 'afternoon', 'evening']::text[];
