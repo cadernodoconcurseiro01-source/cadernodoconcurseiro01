@@ -94,6 +94,20 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
 
   const { completedItems, toggleComplete } = useStudyCompletion();
 
+  const lastContest = useMemo(() => {
+    return contests.find(c => c.is_active) || contests[0] || null;
+  }, [contests]);
+
+  const contestSubjects = useMemo(() => {
+    if (!lastContest) return [];
+    return subjects.filter(s => s.contest_id === lastContest.id);
+  }, [subjects, lastContest]);
+
+  const schedule = useMemo(() => {
+    if (!lastContest || contestSubjects.length === 0) return [];
+    return generateScheduleFromContest(contestSubjects, lastContest);
+  }, [lastContest, contestSubjects]);
+
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
