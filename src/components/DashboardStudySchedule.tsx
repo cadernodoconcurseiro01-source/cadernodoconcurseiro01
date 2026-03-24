@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Subject, Contest, StudyScheduleItem, DifficultyLevel } from '@/types/database';
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
 import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
 import { useContests } from '@/hooks/useContests';
