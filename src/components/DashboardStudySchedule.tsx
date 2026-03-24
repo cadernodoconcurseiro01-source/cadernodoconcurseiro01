@@ -118,9 +118,9 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   }, [subjects, selectedContest]);
 
   const schedule = useMemo(() => {
-    if (!lastContest || contestSubjects.length === 0) return [];
-    return generateScheduleFromContest(contestSubjects, lastContest);
-  }, [lastContest, contestSubjects]);
+    if (!selectedContest || contestSubjects.length === 0) return [];
+    return generateScheduleFromContest(contestSubjects, selectedContest);
+  }, [selectedContest, contestSubjects]);
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -136,7 +136,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
     return groups;
   };
 
-  if (!lastContest) {
+  if (!selectedContest) {
     return (
       <Card className="p-8 text-center shadow-card animate-fade-in">
         <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
@@ -156,55 +156,90 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
     );
   }
 
-  if (contestSubjects.length === 0) {
-    return (
-      <Card className="p-6 shadow-card animate-fade-in">
-        <div className="flex items-center gap-2 mb-3">
-          <Trophy className="w-5 h-5 text-primary" />
-          <h3 className="font-display font-semibold">{lastContest.name}</h3>
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">
-          Adicione matérias ao concurso para gerar o cronograma.
-        </p>
-        <Link to={`/contests/${lastContest.id}`}>
-          <Button variant="outline" size="sm">Gerenciar Concurso</Button>
-        </Link>
-      </Card>
-    );
-  }
-
   const grouped = groupByPeriod(schedule);
   const completedCount = schedule.filter(s => completedItems.has(s.subjectId)).length;
 
   return (
     <Card className="p-6 shadow-card animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h3 className="font-display font-semibold">Cronograma de Hoje</h3>
-          </div>
-          <Link to={`/contests/${lastContest.id}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">
-            {lastContest.name} — {lastContest.cycle_number || 1}º Ciclo
+      {/* Contest Selector */}
+      {contests.length > 1 && (
+        <div className="mb-4">
+          <Select value={selectedContestId} onValueChange={setSelectedContestId}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione um concurso" />
+            </SelectTrigger>
+            <SelectContent>
+              {contests.map(c => (
+                <SelectItem key={c.id} value={c.id}>
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-3.5 h-3.5 text-primary" />
+                    {c.name}
+                    {c.is_active && <Badge variant="secondary" className="text-[10px] ml-1">Ativo</Badge>}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Subjects in this contest */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            Disciplinas do Concurso ({contestSubjects.length})
+          </span>
+          <Link to={`/contests/${selectedContest.id}`} className="text-xs text-primary hover:underline">
+            Gerenciar
           </Link>
         </div>
-        <Badge variant={completedCount === schedule.length ? "default" : "secondary"}>
-          {completedCount}/{schedule.length}
-        </Badge>
+        {contestSubjects.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Adicione matérias ao concurso para gerar o cronograma.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {contestSubjects.map(s => (
+              <Badge key={s.id} variant="outline" className="text-xs gap-1.5 py-1">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                {s.name}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex gap-2 mb-4">
-        <AddDailyQuestionsDialog
-          onAdd={addOrUpdateDailyQuestionsAsync}
-          subjects={contestSubjects}
-        />
-        <AddSimuladoDialog
-          onAdd={addSimuladoAsync}
-          contests={[lastContest]}
-          subjects={contestSubjects}
-        />
-      </div>
+      {contestSubjects.length > 0 && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                <h3 className="font-display font-semibold">Cronograma de Hoje</h3>
+              </div>
+              <Link to={`/contests/${selectedContest.id}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                {selectedContest.name} — {selectedContest.cycle_number || 1}º Ciclo
+              </Link>
+            </div>
+            <Badge variant={completedCount === schedule.length ? "default" : "secondary"}>
+              {completedCount}/{schedule.length}
+            </Badge>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex gap-2 mb-4">
+            <AddDailyQuestionsDialog
+              onAdd={addOrUpdateDailyQuestionsAsync}
+              subjects={contestSubjects}
+            />
+            <AddSimuladoDialog
+              onAdd={addSimuladoAsync}
+              contests={[selectedContest]}
+              subjects={contestSubjects}
+            />
+          </div>
+        </>
+      )}
 
       <div className="space-y-4">
         {Object.entries(grouped).map(([period, items]) => {
