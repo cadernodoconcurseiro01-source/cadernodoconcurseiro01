@@ -241,68 +241,72 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
         </>
       )}
 
-      <div className="space-y-4">
-        {Object.entries(grouped).map(([period, items]) => {
-          if (items.length === 0) return null;
-          const config = periodConfig[period as keyof typeof periodConfig];
-          const PeriodIcon = config.icon;
+      {contestSubjects.length > 0 && (
+        <>
+          <div className="space-y-4">
+            {Object.entries(grouped).map(([period, items]) => {
+              if (items.length === 0) return null;
+              const config = periodConfig[period as keyof typeof periodConfig];
+              const PeriodIcon = config.icon;
 
-          return (
-            <div key={period} className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <PeriodIcon className="w-4 h-4" />
-                <span className="font-medium">{config.label}</span>
-                <span className="text-xs">({config.time})</span>
-              </div>
-              <div className="space-y-2 pl-6">
-                {items.map((item, idx) => {
-                  const DiffIcon = difficultyConfig[item.difficulty].icon;
-                  const isDone = completedItems.has(item.subjectId);
+              return (
+                <div key={period} className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <PeriodIcon className="w-4 h-4" />
+                    <span className="font-medium">{config.label}</span>
+                    <span className="text-xs">({config.time})</span>
+                  </div>
+                  <div className="space-y-2 pl-6">
+                    {items.map((item, idx) => {
+                      const DiffIcon = difficultyConfig[item.difficulty].icon;
+                      const isDone = completedItems.has(item.subjectId);
 
-                  return (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "flex items-center justify-between p-3 rounded-lg transition-colors",
-                        isDone ? "bg-accent/10 opacity-70" : "bg-muted/50 hover:bg-muted"
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={isDone}
-                          onCheckedChange={() => toggleComplete(item.subjectId)}
-                        />
+                      return (
                         <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className={cn("font-medium", isDone && "line-through text-muted-foreground")}>
-                          {item.subjectName}
-                        </span>
-                        <Badge
-                          variant="secondary"
-                          className={cn("text-[10px] px-1.5", difficultyConfig[item.difficulty].className)}
+                          key={idx}
+                          className={cn(
+                            "flex items-center justify-between p-3 rounded-lg transition-colors",
+                            isDone ? "bg-accent/10 opacity-70" : "bg-muted/50 hover:bg-muted"
+                          )}
                         >
-                          <DiffIcon className="w-3 h-3 mr-0.5" />
-                          {difficultyConfig[item.difficulty].label}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{formatDuration(item.durationMinutes)}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={isDone}
+                              onCheckedChange={() => toggleComplete(item.subjectId)}
+                            />
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className={cn("font-medium", isDone && "line-through text-muted-foreground")}>
+                              {item.subjectName}
+                            </span>
+                            <Badge
+                              variant="secondary"
+                              className={cn("text-[10px] px-1.5", difficultyConfig[item.difficulty].className)}
+                            >
+                              <DiffIcon className="w-3 h-3 mr-0.5" />
+                              {difficultyConfig[item.difficulty].label}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{formatDuration(item.durationMinutes)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-      <div className="mt-4 pt-4 border-t text-xs text-muted-foreground text-center">
-        Total: {formatDuration(schedule.reduce((sum, s) => sum + s.durationMinutes, 0))} de estudo
-      </div>
+          <div className="mt-4 pt-4 border-t text-xs text-muted-foreground text-center">
+            Total: {formatDuration(schedule.reduce((sum, s) => sum + s.durationMinutes, 0))} de estudo
+          </div>
+        </>
+      )}
     </Card>
   );
 }
