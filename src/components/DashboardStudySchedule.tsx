@@ -94,6 +94,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { addSimuladoAsync } = useSimulados();
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
   const { completedItems, toggleComplete } = useStudyCompletion();
+  const { getSubjectsForContest } = useContestSubjects();
 
   const [selectedContestId, setSelectedContestId] = useState<string>('');
 
@@ -115,8 +116,8 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
 
   const contestSubjects = useMemo(() => {
     if (!selectedContest) return [];
-    return subjects.filter(s => s.contest_id === selectedContest.id);
-  }, [subjects, selectedContest]);
+    return getSubjectsForContest(selectedContest.id, subjects);
+  }, [subjects, selectedContest, getSubjectsForContest]);
 
   const schedule = useMemo(() => {
     if (!selectedContest || contestSubjects.length === 0) return [];
