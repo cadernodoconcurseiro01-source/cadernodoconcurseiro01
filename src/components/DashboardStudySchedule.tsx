@@ -92,17 +92,30 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { contests } = useContests();
   const { addSimuladoAsync } = useSimulados();
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
-
   const { completedItems, toggleComplete } = useStudyCompletion();
 
-  const lastContest = useMemo(() => {
+  const [selectedContestId, setSelectedContestId] = useState<string>('');
+
+  // Auto-select active contest
+  const activeContest = useMemo(() => {
     return contests.find(c => c.is_active) || contests[0] || null;
   }, [contests]);
 
+  // Set default selection when contests load
+  useMemo(() => {
+    if (!selectedContestId && activeContest) {
+      setSelectedContestId(activeContest.id);
+    }
+  }, [activeContest, selectedContestId]);
+
+  const selectedContest = useMemo(() => {
+    return contests.find(c => c.id === selectedContestId) || activeContest;
+  }, [contests, selectedContestId, activeContest]);
+
   const contestSubjects = useMemo(() => {
-    if (!lastContest) return [];
-    return subjects.filter(s => s.contest_id === lastContest.id);
-  }, [subjects, lastContest]);
+    if (!selectedContest) return [];
+    return subjects.filter(s => s.contest_id === selectedContest.id);
+  }, [subjects, selectedContest]);
 
   const schedule = useMemo(() => {
     if (!lastContest || contestSubjects.length === 0) return [];
