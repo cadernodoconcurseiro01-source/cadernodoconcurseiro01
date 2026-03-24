@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Trophy, ArrowLeft, Plus, BookOpen, CheckCircle, RefreshCw, Layers } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useContests } from '@/hooks/useContests';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useContestSubjects } from '@/hooks/useContestSubjects';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
 import { LinkExistingSubjectDialog } from '@/components/LinkExistingSubjectDialog';
 import { StudySequenceTable } from '@/components/StudySequenceTable';
@@ -17,13 +18,14 @@ const ContestDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { contests, isLoading: contestsLoading } = useContests();
-  const { subjects, addSubjectWithContest, updateSubject, deleteSubject, linkSubjectsToContestAsync } = useSubjects();
+  const { subjects, addSubjectWithContest } = useSubjects();
+  const { getSubjectsForContest, getAvailableSubjectsForContest, linkSubjectsAsync } = useContestSubjects();
   
   const [addSubjectOpen, setAddSubjectOpen] = useState(false);
 
   const contest = contests.find(c => c.id === id);
-  const contestSubjects = subjects.filter(s => s.contest_id === id);
-  const availableSubjects = subjects.filter(s => s.contest_id !== id);
+  const contestSubjects = id ? getSubjectsForContest(id, subjects) : [];
+  const availableSubjects = id ? getAvailableSubjectsForContest(id, subjects) : [];
 
   const handleAddSubject = (params: { name: string; color: string; goalMinutes: number; difficulty: DifficultyLevel }) => {
     if (!id) return;
@@ -40,7 +42,7 @@ const ContestDetailsPage = () => {
 
   const handleLinkExisting = async (subjectIds: string[]) => {
     if (!id) return;
-    await linkSubjectsToContestAsync({ subjectIds, contestId: id });
+    await linkSubjectsAsync({ subjectIds, contestId: id });
   };
 
   const formatExamDate = (dateString: string | null) => {

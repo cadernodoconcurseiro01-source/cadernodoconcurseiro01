@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      contest_subjects: {
+        Row: {
+          contest_id: string
+          created_at: string
+          id: string
+          subject_id: string
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string
+          id?: string
+          subject_id: string
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string
+          id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_subjects_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contest_subjects_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contests: {
         Row: {
           created_at: string
