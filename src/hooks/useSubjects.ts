@@ -171,21 +171,14 @@ export function useSubjects() {
 
   const linkSubjectsToContest = useMutation({
     mutationFn: async ({ subjectIds, contestId }: { subjectIds: string[]; contestId: string }) => {
-      const updates = subjectIds.map(id =>
-        supabase
-          .from('subjects')
-          .update({ contest_id: contestId })
-          .eq('id', id)
-          .select()
-          .single()
-      );
-      const results = await Promise.all(updates);
-      const error = results.find(r => r.error)?.error;
+      const rows = subjectIds.map(subject_id => ({ contest_id: contestId, subject_id }));
+      const { error } = await supabase
+        .from('contest_subjects')
+        .insert(rows);
       if (error) throw error;
-      return results.map(r => r.data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['contest_subjects'] });
       toast.success('Matérias vinculadas ao concurso!');
     },
     onError: (error) => {
