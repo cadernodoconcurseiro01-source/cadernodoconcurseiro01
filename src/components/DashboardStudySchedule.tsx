@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Trophy, HelpCircle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Subject, Contest, StudyScheduleItem, DifficultyLevel } from '@/types/database';
-import { useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
 import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
 import { useContests } from '@/hooks/useContests';
@@ -91,22 +92,35 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { contests } = useContests();
   const { addSimuladoAsync } = useSimulados();
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
-
   const { completedItems, toggleComplete } = useStudyCompletion();
 
-  const lastContest = useMemo(() => {
+  const [selectedContestId, setSelectedContestId] = useState<string>('');
+
+  // Auto-select active contest
+  const activeContest = useMemo(() => {
     return contests.find(c => c.is_active) || contests[0] || null;
   }, [contests]);
 
+  // Set default selection when contests load
+  useMemo(() => {
+    if (!selectedContestId && activeContest) {
+      setSelectedContestId(activeContest.id);
+    }
+  }, [activeContest, selectedContestId]);
+
+  const selectedContest = useMemo(() => {
+    return contests.find(c => c.id === selectedContestId) || activeContest;
+  }, [contests, selectedContestId, activeContest]);
+
   const contestSubjects = useMemo(() => {
-    if (!lastContest) return [];
-    return subjects.filter(s => s.contest_id === lastContest.id);
-  }, [subjects, lastContest]);
+    if (!selectedContest) return [];
+    return subjects.filter(s => s.contest_id === selectedContest.id);
+  }, [subjects, selectedContest]);
 
   const schedule = useMemo(() => {
-    if (!lastContest || contestSubjects.length === 0) return [];
-    return generateScheduleFromContest(contestSubjects, lastContest);
-  }, [lastContest, contestSubjects]);
+    if (!selectedContest || contestSubjects.length === 0) return [];
+    return generateScheduleFromContest(contestSubjects, selectedContest);
+  }, [selectedContest, contestSubjects]);
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -122,7 +136,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
     return groups;
   };
 
-  if (!lastContest) {
+  if (!selectedContest) {
     return (
       <Card className="p-8 text-center shadow-card animate-fade-in">
         <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
@@ -142,118 +156,157 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
     );
   }
 
-  if (contestSubjects.length === 0) {
-    return (
-      <Card className="p-6 shadow-card animate-fade-in">
-        <div className="flex items-center gap-2 mb-3">
-          <Trophy className="w-5 h-5 text-primary" />
-          <h3 className="font-display font-semibold">{lastContest.name}</h3>
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">
-          Adicione matérias ao concurso para gerar o cronograma.
-        </p>
-        <Link to={`/contests/${lastContest.id}`}>
-          <Button variant="outline" size="sm">Gerenciar Concurso</Button>
-        </Link>
-      </Card>
-    );
-  }
-
   const grouped = groupByPeriod(schedule);
   const completedCount = schedule.filter(s => completedItems.has(s.subjectId)).length;
 
   return (
     <Card className="p-6 shadow-card animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h3 className="font-display font-semibold">Cronograma de Hoje</h3>
-          </div>
-          <Link to={`/contests/${lastContest.id}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">
-            {lastContest.name} — {lastContest.cycle_number || 1}º Ciclo
+      {/* Contest Selector */}
+      {contests.length > 1 && (
+        <div className="mb-4">
+          <Select value={selectedContestId} onValueChange={setSelectedContestId}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione um concurso" />
+            </SelectTrigger>
+            <SelectContent>
+              {contests.map(c => (
+                <SelectItem key={c.id} value={c.id}>
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-3.5 h-3.5 text-primary" />
+                    {c.name}
+                    {c.is_active && <Badge variant="secondary" className="text-[10px] ml-1">Ativo</Badge>}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Subjects in this contest */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            Disciplinas do Concurso ({contestSubjects.length})
+          </span>
+          <Link to={`/contests/${selectedContest.id}`} className="text-xs text-primary hover:underline">
+            Gerenciar
           </Link>
         </div>
-        <Badge variant={completedCount === schedule.length ? "default" : "secondary"}>
-          {completedCount}/{schedule.length}
-        </Badge>
+        {contestSubjects.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Adicione matérias ao concurso para gerar o cronograma.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {contestSubjects.map(s => (
+              <Badge key={s.id} variant="outline" className="text-xs gap-1.5 py-1">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                {s.name}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex gap-2 mb-4">
-        <AddDailyQuestionsDialog
-          onAdd={addOrUpdateDailyQuestionsAsync}
-          subjects={contestSubjects}
-        />
-        <AddSimuladoDialog
-          onAdd={addSimuladoAsync}
-          contests={[lastContest]}
-          subjects={contestSubjects}
-        />
-      </div>
-
-      <div className="space-y-4">
-        {Object.entries(grouped).map(([period, items]) => {
-          if (items.length === 0) return null;
-          const config = periodConfig[period as keyof typeof periodConfig];
-          const PeriodIcon = config.icon;
-
-          return (
-            <div key={period} className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <PeriodIcon className="w-4 h-4" />
-                <span className="font-medium">{config.label}</span>
-                <span className="text-xs">({config.time})</span>
+      {contestSubjects.length > 0 && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                <h3 className="font-display font-semibold">Cronograma de Hoje</h3>
               </div>
-              <div className="space-y-2 pl-6">
-                {items.map((item, idx) => {
-                  const DiffIcon = difficultyConfig[item.difficulty].icon;
-                  const isDone = completedItems.has(item.subjectId);
-
-                  return (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "flex items-center justify-between p-3 rounded-lg transition-colors",
-                        isDone ? "bg-accent/10 opacity-70" : "bg-muted/50 hover:bg-muted"
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={isDone}
-                          onCheckedChange={() => toggleComplete(item.subjectId)}
-                        />
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className={cn("font-medium", isDone && "line-through text-muted-foreground")}>
-                          {item.subjectName}
-                        </span>
-                        <Badge
-                          variant="secondary"
-                          className={cn("text-[10px] px-1.5", difficultyConfig[item.difficulty].className)}
-                        >
-                          <DiffIcon className="w-3 h-3 mr-0.5" />
-                          {difficultyConfig[item.difficulty].label}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{formatDuration(item.durationMinutes)}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <Link to={`/contests/${selectedContest.id}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                {selectedContest.name} — {selectedContest.cycle_number || 1}º Ciclo
+              </Link>
             </div>
-          );
-        })}
-      </div>
+            <Badge variant={completedCount === schedule.length ? "default" : "secondary"}>
+              {completedCount}/{schedule.length}
+            </Badge>
+          </div>
 
-      <div className="mt-4 pt-4 border-t text-xs text-muted-foreground text-center">
-        Total: {formatDuration(schedule.reduce((sum, s) => sum + s.durationMinutes, 0))} de estudo
-      </div>
+          {/* Quick Actions */}
+          <div className="flex gap-2 mb-4">
+            <AddDailyQuestionsDialog
+              onAdd={addOrUpdateDailyQuestionsAsync}
+              subjects={contestSubjects}
+            />
+            <AddSimuladoDialog
+              onAdd={addSimuladoAsync}
+              contests={[selectedContest]}
+              subjects={contestSubjects}
+            />
+          </div>
+        </>
+      )}
+
+      {contestSubjects.length > 0 && (
+        <>
+          <div className="space-y-4">
+            {Object.entries(grouped).map(([period, items]) => {
+              if (items.length === 0) return null;
+              const config = periodConfig[period as keyof typeof periodConfig];
+              const PeriodIcon = config.icon;
+
+              return (
+                <div key={period} className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <PeriodIcon className="w-4 h-4" />
+                    <span className="font-medium">{config.label}</span>
+                    <span className="text-xs">({config.time})</span>
+                  </div>
+                  <div className="space-y-2 pl-6">
+                    {items.map((item, idx) => {
+                      const DiffIcon = difficultyConfig[item.difficulty].icon;
+                      const isDone = completedItems.has(item.subjectId);
+
+                      return (
+                        <div
+                          key={idx}
+                          className={cn(
+                            "flex items-center justify-between p-3 rounded-lg transition-colors",
+                            isDone ? "bg-accent/10 opacity-70" : "bg-muted/50 hover:bg-muted"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={isDone}
+                              onCheckedChange={() => toggleComplete(item.subjectId)}
+                            />
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className={cn("font-medium", isDone && "line-through text-muted-foreground")}>
+                              {item.subjectName}
+                            </span>
+                            <Badge
+                              variant="secondary"
+                              className={cn("text-[10px] px-1.5", difficultyConfig[item.difficulty].className)}
+                            >
+                              <DiffIcon className="w-3 h-3 mr-0.5" />
+                              {difficultyConfig[item.difficulty].label}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{formatDuration(item.durationMinutes)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 pt-4 border-t text-xs text-muted-foreground text-center">
+            Total: {formatDuration(schedule.reduce((sum, s) => sum + s.durationMinutes, 0))} de estudo
+          </div>
+        </>
+      )}
     </Card>
   );
 }
