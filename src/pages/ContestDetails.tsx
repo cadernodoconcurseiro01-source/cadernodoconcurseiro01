@@ -27,16 +27,9 @@ const ContestDetailsPage = () => {
   const contestSubjects = id ? getSubjectsForContest(id, subjects) : [];
   const availableSubjects = id ? getAvailableSubjectsForContest(id, subjects) : [];
 
-  const handleAddSubject = async (params: { name: string; color: string; goalMinutes: number; difficulty: DifficultyLevel }) => {
+  const handleAddSubject = (params: { name: string; color: string; goalMinutes: number; difficulty: DifficultyLevel }) => {
     if (!id) return;
     
-    // Create subject then link it
-    const { addSubjectAsync } = await import('@/hooks/useSubjects').then(() => {
-      // We need to use the hook's async version
-      return { addSubjectAsync: null };
-    });
-
-    // Use addSubjectWithContest which sets contest_id, then also link via junction
     addSubjectWithContest({
       name: params.name,
       color: params.color,
