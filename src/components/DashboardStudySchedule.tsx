@@ -232,7 +232,9 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
           <div className="flex gap-2 mb-4">
             <AddDailyQuestionsDialog
               onAdd={addOrUpdateDailyQuestionsAsync}
-              subjects={contestSubjects}
+              subjects={subjects}
+              contests={contests}
+              contestSubjectMappings={mappings}
             />
             <AddSimuladoDialog
               onAdd={addSimuladoAsync}
