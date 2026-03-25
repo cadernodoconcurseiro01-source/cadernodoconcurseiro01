@@ -34,13 +34,30 @@ export function useContests() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      const insertData = {
+        name: contest.name,
+        exam_date: contest.exam_date,
+        study_plan_type: contest.study_plan_type as string,
+        cycle_days: contest.cycle_days,
+        cycle_number: contest.cycle_number,
+        subjects_per_day: contest.subjects_per_day,
+        study_periods: contest.study_periods as string[],
+        is_active: contest.is_active,
+        user_id: user.id,
+      };
+
+      console.log('Inserting contest:', insertData);
+
       const { data, error } = await supabase
         .from('contests')
-        .insert({ ...contest, user_id: user.id })
+        .insert(insertData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
