@@ -94,7 +94,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { addSimuladoAsync } = useSimulados();
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
   const { completedItems, toggleComplete } = useStudyCompletion();
-  const { getSubjectsForContest } = useContestSubjects();
+  const { getSubjectsForContest, mappings } = useContestSubjects();
 
   const [selectedContestId, setSelectedContestId] = useState<string>('');
 
