@@ -94,7 +94,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { addSimuladoAsync } = useSimulados();
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
   const { completedItems, toggleComplete } = useStudyCompletion();
-  const { getSubjectsForContest } = useContestSubjects();
+  const { getSubjectsForContest, mappings } = useContestSubjects();
 
   const [selectedContestId, setSelectedContestId] = useState<string>('');
 
@@ -232,7 +232,9 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
           <div className="flex gap-2 mb-4">
             <AddDailyQuestionsDialog
               onAdd={addOrUpdateDailyQuestionsAsync}
-              subjects={contestSubjects}
+              subjects={subjects}
+              contests={contests}
+              contestSubjectMappings={mappings}
             />
             <AddSimuladoDialog
               onAdd={addSimuladoAsync}

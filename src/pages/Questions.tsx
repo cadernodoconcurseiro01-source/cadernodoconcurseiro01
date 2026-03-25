@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { HelpCircle, Calendar, Pencil, Trash2 } from 'lucide-react';
+import { HelpCircle, Calendar, Pencil, Trash2, Trophy } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useContests } from '@/hooks/useContests';
+import { useContestSubjects } from '@/hooks/useContestSubjects';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
 import { EditDailyQuestionDialog } from '@/components/EditDailyQuestionDialog';
@@ -13,12 +16,20 @@ import { ptBR } from 'date-fns/locale';
 
 const QuestionsPage = () => {
   const { subjects, isLoading: subjectsLoading } = useSubjects();
+  const { contests } = useContests();
+  const { mappings } = useContestSubjects();
   const { dailyQuestions, isLoading: questionsLoading, addOrUpdateDailyQuestionsAsync, updateDailyQuestion, deleteDailyQuestion, getTotalStats } = useDailyQuestions();
   
   const [editingQuestion, setEditingQuestion] = useState<typeof dailyQuestions[0] | null>(null);
 
   const totalStats = getTotalStats();
   const isLoading = subjectsLoading || questionsLoading;
+
+  // Helper to find contest names for a subject
+  const getContestNamesForSubject = (subjectId: string): string[] => {
+    const contestIds = mappings.filter(m => m.subject_id === subjectId).map(m => m.contest_id);
+    return contests.filter(c => contestIds.includes(c.id)).map(c => c.name);
+  };
 
   const groupedByDate = dailyQuestions.reduce((acc, q) => {
     const date = q.question_date;
@@ -57,7 +68,12 @@ const QuestionsPage = () => {
               Registre as questões resolvidas por matéria para acompanhar seu desempenho.
             </p>
           </div>
-          <AddDailyQuestionsDialog subjects={subjects} onAdd={addOrUpdateDailyQuestionsAsync} />
+          <AddDailyQuestionsDialog 
+            subjects={subjects} 
+            onAdd={addOrUpdateDailyQuestionsAsync}
+            contests={contests}
+            contestSubjectMappings={mappings}
+          />
         </div>
       </header>
 
@@ -93,7 +109,12 @@ const QuestionsPage = () => {
           <p className="text-muted-foreground text-sm mb-4">
             Comece a registrar suas questões diárias para acompanhar seu progresso.
           </p>
-          <AddDailyQuestionsDialog subjects={subjects} onAdd={addOrUpdateDailyQuestionsAsync} />
+          <AddDailyQuestionsDialog 
+            subjects={subjects} 
+            onAdd={addOrUpdateDailyQuestionsAsync}
+            contests={contests}
+            contestSubjectMappings={mappings}
+          />
         </Card>
       ) : (
         <div className="space-y-6">
@@ -120,6 +141,7 @@ const QuestionsPage = () => {
                 <div className="space-y-3">
                   {questions.map((q) => {
                     const subject = subjects.find(s => s.id === q.subject_id);
+                    const contestNames = getContestNamesForSubject(q.subject_id);
                     const percentage = q.total_questions > 0 
                       ? Math.round((q.correct_answers / q.total_questions) * 100) 
                       : 0;
@@ -129,14 +151,26 @@ const QuestionsPage = () => {
                         key={q.id}
                         className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div 
-                            className="w-3 h-3 rounded-full"
+                            className="w-3 h-3 rounded-full flex-shrink-0"
                             style={{ backgroundColor: subject?.color || '#888' }}
                           />
-                          <span className="font-medium">{subject?.name || 'Matéria'}</span>
+                          <div className="min-w-0">
+                            <span className="font-medium">{subject?.name || 'Matéria'}</span>
+                            {contestNames.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-0.5">
+                                {contestNames.map(name => (
+                                  <Badge key={name} variant="outline" className="text-[10px] gap-1 py-0">
+                                    <Trophy className="w-2.5 h-2.5" />
+                                    {name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-4 text-sm flex-shrink-0">
                           <span className="text-muted-foreground">
                             {q.total_questions} questões
                           </span>
