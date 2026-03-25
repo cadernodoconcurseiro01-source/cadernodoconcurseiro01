@@ -3,6 +3,7 @@ import { FileText, Target, CheckCircle, XCircle, Percent } from 'lucide-react';
 import { useSimulados } from '@/hooks/useSimulados';
 import { useContests } from '@/hooks/useContests';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useContestSubjects } from '@/hooks/useContestSubjects';
 import { AddSimuladoDialog } from '@/components/AddSimuladoDialog';
 import { SimuladoList } from '@/components/SimuladoList';
 import { Simulado } from '@/types/database';
@@ -13,6 +14,7 @@ const SimuladosPage = () => {
   const { simulados, isLoading, addSimuladoAsync, updateSimuladoAsync, deleteSimulado, getStats } = useSimulados();
   const { contests } = useContests();
   const { subjects } = useSubjects();
+  const { mappings } = useContestSubjects();
   const [editingSimulado, setEditingSimulado] = useState<Simulado | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
