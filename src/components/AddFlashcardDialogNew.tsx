@@ -95,12 +95,16 @@ export function AddFlashcardDialogNew({ subjects, decks = [], onAdd }: AddFlashc
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label>Matéria</Label>
-            <Select value={subjectId} onValueChange={handleSubjectChange}>
+            <Select value={subjectId || undefined} onValueChange={handleSubjectChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a matéria" />
               </SelectTrigger>
               <SelectContent>
-                {subjects.map((subject) => (
+                {subjects.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    Cadastre uma matéria primeiro
+                  </div>
+                ) : subjects.map((subject) => (
                   <SelectItem key={subject.id} value={subject.id}>
                     <span className="flex items-center gap-2">
                       <span
