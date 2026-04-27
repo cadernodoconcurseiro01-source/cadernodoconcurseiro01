@@ -216,7 +216,7 @@ export function AddSimuladoDialog({ onAdd, contests, subjects, editingSimulado, 
               <div key={index} className="p-3 bg-muted/50 rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
                   <Select 
-                    value={detail.subject_id} 
+                    value={detail.subject_id || undefined} 
                     onValueChange={(v) => updateSubjectDetail(index, 'subject_id', v)}
                   >
                     <SelectTrigger className="w-[180px]">

@@ -137,12 +137,16 @@ export function AddDailyQuestionsDialog({ onAdd, subjects, contests = [], contes
 
           <div className="space-y-2">
             <Label>Disciplina</Label>
-            <Select value={subjectId} onValueChange={setSubjectId} required>
+            <Select value={subjectId || undefined} onValueChange={setSubjectId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma disciplina" />
               </SelectTrigger>
               <SelectContent>
-                {filteredSubjects.map(subject => (
+                {filteredSubjects.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    Nenhuma disciplina disponível
+                  </div>
+                ) : filteredSubjects.map(subject => (
                   <SelectItem key={subject.id} value={subject.id}>
                     <div className="flex items-center gap-2">
                       <div 

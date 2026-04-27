@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Trophy, HelpCircle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Subject, Contest, StudyScheduleItem, DifficultyLevel } from '@/types/database';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
@@ -104,7 +104,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   }, [contests]);
 
   // Set default selection when contests load
-  useMemo(() => {
+  useEffect(() => {
     if (!selectedContestId && activeContest) {
       setSelectedContestId(activeContest.id);
     }
