@@ -192,12 +192,16 @@ const FlashcardsPage = () => {
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
                     <Label>Matéria</Label>
-                    <Select value={newDeckSubjectId} onValueChange={setNewDeckSubjectId}>
+                    <Select value={newDeckSubjectId || undefined} onValueChange={setNewDeckSubjectId}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione a matéria" />
                       </SelectTrigger>
                       <SelectContent>
-                        {subjects.map(s => (
+                        {subjects.length === 0 ? (
+                          <div className="p-2 text-sm text-muted-foreground text-center">
+                            Cadastre uma matéria primeiro
+                          </div>
+                        ) : subjects.map(s => (
                           <SelectItem key={s.id} value={s.id}>
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
