@@ -29,6 +29,9 @@ export function useAvatarUrl(storedUrl: string | null | undefined): string | nul
         if (!cancelled && !error && data) {
           setSignedUrl(data.signedUrl);
         }
+      })
+      .catch((err) => {
+        console.error('Error generating signed avatar URL:', err);
       });
 
     return () => { cancelled = true; };
