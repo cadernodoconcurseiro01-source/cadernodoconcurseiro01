@@ -23,7 +23,7 @@ const StatisticsPage = () => {
   const { 
     dailyQuestions, 
     isLoading: questionsLoading, 
-    addOrUpdateDailyQuestions,
+    addOrUpdateDailyQuestionsAsync,
     getWeeklyStats,
     getBySubject,
     getTotalStats
@@ -176,7 +176,7 @@ const StatisticsPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <AddDailyQuestionsDialog onAdd={addOrUpdateDailyQuestions} subjects={subjects} />
+            <AddDailyQuestionsDialog onAdd={addOrUpdateDailyQuestionsAsync} subjects={subjects} contests={contests} />
           </div>
         </div>
       </header>
