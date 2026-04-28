@@ -8,18 +8,28 @@ export function useProfile() {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return null;
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (error) throw error;
-      return data as Profile | null;
+        if (error) {
+          console.error('Error loading profile:', error);
+          return null;
+        }
+        return data as Profile | null;
+      } catch (err) {
+        console.error('Profile query failed:', err);
+        return null;
+      }
     },
+    retry: 1,
+    staleTime: 30_000,
   });
 
   const updateProfileMutation = useMutation({
