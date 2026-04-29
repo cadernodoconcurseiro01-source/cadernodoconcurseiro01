@@ -24,9 +24,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true;
+
+    // Safety timeout: never leave the user stuck on a loading screen.
+    // Some browsers (e.g. Safari in private mode on tablets) can block
+    // localStorage access and cause getSession() to hang silently.
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Auth loading safety timeout reached');
+        setLoading(false);
+      }
+    }, 4000);
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!isMounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -36,19 +49,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // THEN check for existing session
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
+        if (!isMounted) return;
         setSession(session);
         setUser(session?.user ?? null);
       })
       .catch((error) => {
         console.error('Error restoring auth session:', error);
+        if (!isMounted) return;
         setSession(null);
         setUser(null);
       })
       .finally(() => {
+        if (!isMounted) return;
         setLoading(false);
       });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
