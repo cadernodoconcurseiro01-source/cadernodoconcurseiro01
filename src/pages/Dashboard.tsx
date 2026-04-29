@@ -1,4 +1,4 @@
-import { Clock, Target, Flame, Layers, BookOpen, Calendar, BarChart3, Trophy } from 'lucide-react';
+import { Clock, Target, Flame, Layers, BookOpen, Calendar, BarChart3, Trophy, CalendarDays } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { StatsCard } from '@/components/StatsCard';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { PomodoroTimerNew } from '@/components/PomodoroTimerNew';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
 import { SubjectProgressNew } from '@/components/SubjectProgressNew';
 import { DashboardStudySchedule } from '@/components/DashboardStudySchedule';
+import { StudyCalendar } from '@/components/StudyCalendar';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useSessions } from '@/hooks/useSessions';
 import { useFlashcards } from '@/hooks/useFlashcards';
@@ -174,6 +175,20 @@ const Dashboard = () => {
           />
         </section>
       </div>
+
+      {/* Calendar section */}
+      <section className="mt-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+            <CalendarDays className="w-5 h-5 text-primary" />
+            Calendário
+          </h2>
+          <Link to="/calendar">
+            <Button variant="outline" size="sm">Ver tudo</Button>
+          </Link>
+        </div>
+        <StudyCalendar compact />
+      </section>
 
       {/* Edit Subject Dialog */}
       <AddSubjectDialogNew
