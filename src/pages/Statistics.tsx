@@ -4,6 +4,7 @@ import { useSessions } from '@/hooks/useSessions';
 import { useSimulados } from '@/hooks/useSimulados';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
 import { useContests } from '@/hooks/useContests';
+import { useContestSubjects } from '@/hooks/useContestSubjects';
 import { StudyCharts } from '@/components/StudyCharts';
 import { AddDailyQuestionsDialog } from '@/components/AddDailyQuestionsDialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +21,7 @@ const StatisticsPage = () => {
   const { sessions, getStats } = useSessions();
   const { simulados } = useSimulados();
   const { contests } = useContests();
+  const { getSubjectsForContest } = useContestSubjects();
   const { 
     dailyQuestions, 
     isLoading: questionsLoading, 
@@ -31,11 +33,15 @@ const StatisticsPage = () => {
 
   const [selectedContestId, setSelectedContestId] = useState(ALL_CONTESTS_VALUE);
 
-  // Filter subjects by contest
+  // Filter subjects by contest (supports both direct contest_id and M2M contest_subjects)
   const filteredSubjects = useMemo(() => {
     if (selectedContestId === ALL_CONTESTS_VALUE) return subjects;
-    return subjects.filter(s => s.contest_id === selectedContestId);
-  }, [subjects, selectedContestId]);
+    const m2mSubjects = getSubjectsForContest(selectedContestId, subjects);
+    const directSubjects = subjects.filter(s => s.contest_id === selectedContestId);
+    const merged = new Map<string, typeof subjects[number]>();
+    [...m2mSubjects, ...directSubjects].forEach(s => merged.set(s.id, s));
+    return Array.from(merged.values());
+  }, [subjects, selectedContestId, getSubjectsForContest]);
 
   const filteredSubjectIds = useMemo(() => new Set(filteredSubjects.map(s => s.id)), [filteredSubjects]);
 
