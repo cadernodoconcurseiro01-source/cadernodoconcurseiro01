@@ -17,6 +17,7 @@ import QuestionsPage from "./pages/Questions";
 import SimuladosPage from "./pages/Simulados";
 import StatisticsPage from "./pages/Statistics";
 import VersePage from "./pages/Verse";
+import CalendarPage from "./pages/CalendarPage";
 import ProfilePage from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -122,6 +123,14 @@ function AppRoutes() {
             element={
               <ProtectedRoute>
                 <StatisticsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/calendar" 
+            element={
+              <ProtectedRoute>
+                <CalendarPage />
               </ProtectedRoute>
             } 
           />
