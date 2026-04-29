@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Timer, BookOpen, Layers, LogOut, User, Trophy, FileText, BarChart3, HelpCircle, Book } from 'lucide-react';
+import { LayoutDashboard, Timer, BookOpen, Layers, LogOut, User, Trophy, FileText, BarChart3, HelpCircle, Book, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ const navItems = [
   { path: '/questions', label: 'Questões', icon: HelpCircle },
   { path: '/simulados', label: 'Simulados', icon: FileText },
   { path: '/statistics', label: 'Estatísticas', icon: BarChart3 },
+  { path: '/calendar', label: 'Calendário', icon: CalendarDays },
   { path: '/verse', label: 'Versículo', icon: Book },
 ];
 
