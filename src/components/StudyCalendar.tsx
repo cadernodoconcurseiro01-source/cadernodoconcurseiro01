@@ -236,6 +236,70 @@ export function StudyCalendar({ compact = false }: Props) {
               )}
             </div>
 
+            {/* Daily Questions */}
+            {dayQuestions.length > 0 && (
+              <div className="border-t pt-3">
+                <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                  <ListChecks className="w-4 h-4 text-accent" />
+                  Questões do dia
+                </div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <Badge variant="secondary">Total: {dayQuestionsTotal.total}</Badge>
+                  <Badge variant="outline">✓ {dayQuestionsTotal.correct}</Badge>
+                  <Badge variant="outline">✗ {dayQuestionsTotal.wrong}</Badge>
+                  {dayQuestionsTotal.total > 0 && (
+                    <Badge variant="outline">
+                      {Math.round((dayQuestionsTotal.correct / dayQuestionsTotal.total) * 100)}%
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {dayQuestions.map(q => {
+                    const subj = subjectMap.get(q.subject_id);
+                    return (
+                      <div
+                        key={q.id}
+                        className="flex items-center gap-2 text-xs px-2.5 py-1 rounded-md border"
+                        style={{ borderColor: subj?.color }}
+                      >
+                        <span className="w-2 h-2 rounded-full" style={{ background: subj?.color }} />
+                        <span>{subj?.name || 'Matéria removida'}</span>
+                        <span className="text-muted-foreground">
+                          · {q.correct_answers}/{q.total_questions}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Simulados */}
+            {daySimulados.length > 0 && (
+              <div className="border-t pt-3">
+                <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                  <FileBarChart className="w-4 h-4 text-warning" />
+                  Simulados
+                </div>
+                <div className="space-y-1.5">
+                  {daySimulados.map(s => {
+                    const pct = s.total_questions > 0
+                      ? Math.round((s.correct_answers / s.total_questions) * 100)
+                      : 0;
+                    return (
+                      <div key={s.id} className="text-sm flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline">Simulado</Badge>
+                        <span className="font-medium">{s.name}</span>
+                        <span className="text-muted-foreground text-xs">
+                          {s.correct_answers}/{s.total_questions} ({pct}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Exams */}
             {(dayContests.length > 0 || dayEvents.length > 0) && (
               <div className="border-t pt-3">
