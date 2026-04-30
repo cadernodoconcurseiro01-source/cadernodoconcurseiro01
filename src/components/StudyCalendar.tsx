@@ -82,6 +82,17 @@ export function StudyCalendar({ compact = false }: Props) {
   const dayNotes = notes.filter(n => n.note_date === selectedKey);
   const dayEvents = events.filter(e => e.event_date === selectedKey);
   const dayContests = contests.filter(c => c.exam_date === selectedKey);
+  const dayQuestions = dailyQuestions.filter(q => q.question_date === selectedKey);
+  const daySimulados = simulados.filter(s => s.exam_date === selectedKey);
+
+  const dayQuestionsTotal = dayQuestions.reduce(
+    (acc, q) => ({
+      total: acc.total + q.total_questions,
+      correct: acc.correct + q.correct_answers,
+      wrong: acc.wrong + q.wrong_answers,
+    }),
+    { total: 0, correct: 0, wrong: 0 }
+  );
 
   const formatTime = (mins: number) => {
     const h = Math.floor(mins / 60);
