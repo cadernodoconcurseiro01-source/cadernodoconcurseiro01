@@ -9,12 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, Clock, BookOpen, FileText, Trophy, Pencil, X } from 'lucide-react';
+import { Trash2, Plus, Clock, BookOpen, FileText, Trophy, Pencil, X, ListChecks, FileBarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSessions } from '@/hooks/useSessions';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useContests } from '@/hooks/useContests';
 import { useCalendarNotes, useCalendarEvents } from '@/hooks/useCalendar';
+import { useDailyQuestions } from '@/hooks/useDailyQuestions';
+import { useSimulados } from '@/hooks/useSimulados';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
@@ -37,6 +39,8 @@ export function StudyCalendar({ compact = false }: Props) {
   const { contests } = useContests();
   const { notes, addNoteAsync, updateNoteAsync, deleteNoteAsync } = useCalendarNotes();
   const { events, addEventAsync, deleteEventAsync } = useCalendarEvents();
+  const { dailyQuestions } = useDailyQuestions();
+  const { simulados } = useSimulados();
 
   const subjectMap = useMemo(() => {
     const m = new Map<string, { name: string; color: string }>();
@@ -78,6 +82,17 @@ export function StudyCalendar({ compact = false }: Props) {
   const dayNotes = notes.filter(n => n.note_date === selectedKey);
   const dayEvents = events.filter(e => e.event_date === selectedKey);
   const dayContests = contests.filter(c => c.exam_date === selectedKey);
+  const dayQuestions = dailyQuestions.filter(q => q.question_date === selectedKey);
+  const daySimulados = simulados.filter(s => s.exam_date === selectedKey);
+
+  const dayQuestionsTotal = dayQuestions.reduce(
+    (acc, q) => ({
+      total: acc.total + q.total_questions,
+      correct: acc.correct + q.correct_answers,
+      wrong: acc.wrong + q.wrong_answers,
+    }),
+    { total: 0, correct: 0, wrong: 0 }
+  );
 
   const formatTime = (mins: number) => {
     const h = Math.floor(mins / 60);
@@ -220,6 +235,70 @@ export function StudyCalendar({ compact = false }: Props) {
                 <p className="text-sm text-muted-foreground">Nenhuma sessão registrada neste dia.</p>
               )}
             </div>
+
+            {/* Daily Questions */}
+            {dayQuestions.length > 0 && (
+              <div className="border-t pt-3">
+                <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                  <ListChecks className="w-4 h-4 text-accent" />
+                  Questões do dia
+                </div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <Badge variant="secondary">Total: {dayQuestionsTotal.total}</Badge>
+                  <Badge variant="outline">✓ {dayQuestionsTotal.correct}</Badge>
+                  <Badge variant="outline">✗ {dayQuestionsTotal.wrong}</Badge>
+                  {dayQuestionsTotal.total > 0 && (
+                    <Badge variant="outline">
+                      {Math.round((dayQuestionsTotal.correct / dayQuestionsTotal.total) * 100)}%
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {dayQuestions.map(q => {
+                    const subj = subjectMap.get(q.subject_id);
+                    return (
+                      <div
+                        key={q.id}
+                        className="flex items-center gap-2 text-xs px-2.5 py-1 rounded-md border"
+                        style={{ borderColor: subj?.color }}
+                      >
+                        <span className="w-2 h-2 rounded-full" style={{ background: subj?.color }} />
+                        <span>{subj?.name || 'Matéria removida'}</span>
+                        <span className="text-muted-foreground">
+                          · {q.correct_answers}/{q.total_questions}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Simulados */}
+            {daySimulados.length > 0 && (
+              <div className="border-t pt-3">
+                <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                  <FileBarChart className="w-4 h-4 text-warning" />
+                  Simulados
+                </div>
+                <div className="space-y-1.5">
+                  {daySimulados.map(s => {
+                    const pct = s.total_questions > 0
+                      ? Math.round((s.correct_answers / s.total_questions) * 100)
+                      : 0;
+                    return (
+                      <div key={s.id} className="text-sm flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline">Simulado</Badge>
+                        <span className="font-medium">{s.name}</span>
+                        <span className="text-muted-foreground text-xs">
+                          {s.correct_answers}/{s.total_questions} ({pct}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Exams */}
             {(dayContests.length > 0 || dayEvents.length > 0) && (
