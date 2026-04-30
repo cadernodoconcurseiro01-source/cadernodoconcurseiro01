@@ -23,6 +23,9 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { toast } from "sonner";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { TimerProvider } from "@/contexts/TimerContext";
+import { useTimerSettings } from "@/hooks/useTimerSettings";
+import { useSessions } from "@/hooks/useSessions";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +53,35 @@ function AppRoutes() {
 
   return (
     <div className="min-h-screen bg-background">
-      {user && <NavigationNew />}
+      {user ? (
+        <AuthedShell />
+      ) : (
+        <main>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="*" element={<Auth />} />
+          </Routes>
+        </main>
+      )}
+    </div>
+  );
+}
+
+function AuthedShell() {
+  const { settings } = useTimerSettings();
+  const { addSession } = useSessions();
+
+  const handleSessionComplete = (subjectId: string, duration: number) => {
+    try {
+      addSession({ subjectId, duration, type: 'pomodoro' });
+    } catch (e) {
+      console.error('session complete error', e);
+    }
+  };
+
+  return (
+    <TimerProvider settings={settings} onSessionComplete={handleSessionComplete}>
+      <NavigationNew />
       <main>
         <Routes>
           <Route path="/auth" element={<Auth />} />
@@ -153,7 +184,7 @@ function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-    </div>
+    </TimerProvider>
   );
 }
 
