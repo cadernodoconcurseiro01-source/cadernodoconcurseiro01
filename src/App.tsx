@@ -23,6 +23,9 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { toast } from "sonner";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
+import { TimerProvider } from "@/contexts/TimerContext";
+import { useTimerSettings } from "@/hooks/useTimerSettings";
+import { useSessions } from "@/hooks/useSessions";
 
 const queryClient = new QueryClient();
 
