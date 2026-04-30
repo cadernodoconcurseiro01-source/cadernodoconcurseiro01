@@ -53,7 +53,35 @@ function AppRoutes() {
 
   return (
     <div className="min-h-screen bg-background">
-      {user && <NavigationNew />}
+      {user ? (
+        <AuthedShell />
+      ) : (
+        <main>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="*" element={<Auth />} />
+          </Routes>
+        </main>
+      )}
+    </div>
+  );
+}
+
+function AuthedShell() {
+  const { settings } = useTimerSettings();
+  const { addSession } = useSessions();
+
+  const handleSessionComplete = (subjectId: string, duration: number) => {
+    try {
+      addSession({ subjectId, duration, type: 'pomodoro' });
+    } catch (e) {
+      console.error('session complete error', e);
+    }
+  };
+
+  return (
+    <TimerProvider settings={settings} onSessionComplete={handleSessionComplete}>
+      <NavigationNew />
       <main>
         <Routes>
           <Route path="/auth" element={<Auth />} />
