@@ -9,12 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, Clock, BookOpen, FileText, Trophy, Pencil, X } from 'lucide-react';
+import { Trash2, Plus, Clock, BookOpen, FileText, Trophy, Pencil, X, ListChecks, FileBarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSessions } from '@/hooks/useSessions';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useContests } from '@/hooks/useContests';
 import { useCalendarNotes, useCalendarEvents } from '@/hooks/useCalendar';
+import { useDailyQuestions } from '@/hooks/useDailyQuestions';
+import { useSimulados } from '@/hooks/useSimulados';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
