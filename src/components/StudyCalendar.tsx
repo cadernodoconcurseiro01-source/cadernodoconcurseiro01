@@ -39,6 +39,8 @@ export function StudyCalendar({ compact = false }: Props) {
   const { contests } = useContests();
   const { notes, addNoteAsync, updateNoteAsync, deleteNoteAsync } = useCalendarNotes();
   const { events, addEventAsync, deleteEventAsync } = useCalendarEvents();
+  const { dailyQuestions } = useDailyQuestions();
+  const { simulados } = useSimulados();
 
   const subjectMap = useMemo(() => {
     const m = new Map<string, { name: string; color: string }>();
