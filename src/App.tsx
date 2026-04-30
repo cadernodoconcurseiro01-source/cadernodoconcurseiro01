@@ -184,7 +184,7 @@ function AuthedShell() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-    </div>
+    </TimerProvider>
   );
 }
 
