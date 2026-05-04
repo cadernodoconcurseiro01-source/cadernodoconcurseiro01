@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, isSameDay, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,6 +93,37 @@ export function StudyCalendar({ compact = false }: Props) {
     }),
     { total: 0, correct: 0, wrong: 0 }
   );
+
+  // Aggregated stats: studied days and total minutes per period + per subject
+  const stats = useMemo(() => {
+    const now = selectedDate;
+    const ranges = {
+      week: { start: startOfWeek(now, { weekStartsOn: 0 }), end: endOfWeek(now, { weekStartsOn: 0 }) },
+      month: { start: startOfMonth(now), end: endOfMonth(now) },
+      year: { start: startOfYear(now), end: endOfYear(now) },
+    };
+    const result = {
+      total: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      week: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      month: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      year: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+    };
+    sessionsByDate.forEach((entry, key) => {
+      const d = parseISO(key);
+      const buckets: (keyof typeof result)[] = ['total'];
+      if (isWithinInterval(d, ranges.week)) buckets.push('week');
+      if (isWithinInterval(d, ranges.month)) buckets.push('month');
+      if (isWithinInterval(d, ranges.year)) buckets.push('year');
+      buckets.forEach(b => {
+        result[b].days += 1;
+        result[b].minutes += entry.totalMinutes;
+        entry.subjects.forEach((mins, sid) => {
+          result[b].perSubject.set(sid, (result[b].perSubject.get(sid) || 0) + mins);
+        });
+      });
+    });
+    return result;
+  }, [sessionsByDate, selectedDate]);
 
   const formatTime = (mins: number) => {
     const h = Math.floor(mins / 60);
@@ -195,6 +226,52 @@ export function StudyCalendar({ compact = false }: Props) {
 
       {/* Day details */}
       <div className="space-y-4">
+        {/* Aggregate stats */}
+        <Card className="p-4">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-primary" /> Resumo de estudos
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {([
+              ['Semana', stats.week],
+              ['Mês', stats.month],
+              ['Ano', stats.year],
+              ['Total', stats.total],
+            ] as const).map(([label, s]) => (
+              <div key={label} className="border rounded-md p-2.5">
+                <div className="text-xs text-muted-foreground">{label}</div>
+                <div className="text-lg font-semibold">{s.days} {s.days === 1 ? 'dia' : 'dias'}</div>
+                <div className="text-xs text-muted-foreground">{formatTime(s.minutes)}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 border-t pt-3">
+            <div className="text-sm font-medium mb-2">Horas por disciplina (total)</div>
+            {stats.total.perSubject.size === 0 ? (
+              <p className="text-xs text-muted-foreground">Sem registros ainda.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {Array.from(stats.total.perSubject.entries())
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([sid, mins]) => {
+                    const subj = subjectMap.get(sid);
+                    return (
+                      <div
+                        key={sid}
+                        className="flex items-center gap-2 text-xs px-2.5 py-1 rounded-md border"
+                        style={{ borderColor: subj?.color }}
+                      >
+                        <span className="w-2 h-2 rounded-full" style={{ background: subj?.color }} />
+                        <span>{subj?.name || 'Matéria removida'}</span>
+                        <span className="text-muted-foreground">· {formatTime(mins)}</span>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        </Card>
+
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold capitalize">
