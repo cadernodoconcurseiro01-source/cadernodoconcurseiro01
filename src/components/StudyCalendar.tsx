@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Trash2, Plus, Clock, BookOpen, FileText, Trophy, Pencil, X, ListChecks, FileBarChart } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useSessions } from '@/hooks/useSessions';
 import { useSubjects } from '@/hooks/useSubjects';
@@ -25,6 +26,8 @@ interface Props {
 
 export function StudyCalendar({ compact = false }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [statsMonth, setStatsMonth] = useState<number>(new Date().getMonth());
+  const [statsYear, setStatsYear] = useState<number>(new Date().getFullYear());
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteTitle, setNoteTitle] = useState('');
@@ -96,11 +99,13 @@ export function StudyCalendar({ compact = false }: Props) {
 
   // Aggregated stats: studied days and total minutes per period + per subject
   const stats = useMemo(() => {
-    const now = selectedDate;
+    const today = new Date();
+    const monthRef = new Date(statsYear, statsMonth, 1);
+    const yearRef = new Date(statsYear, 0, 1);
     const ranges = {
-      week: { start: startOfWeek(now, { weekStartsOn: 0 }), end: endOfWeek(now, { weekStartsOn: 0 }) },
-      month: { start: startOfMonth(now), end: endOfMonth(now) },
-      year: { start: startOfYear(now), end: endOfYear(now) },
+      week: { start: startOfWeek(today, { weekStartsOn: 0 }), end: endOfWeek(today, { weekStartsOn: 0 }) },
+      month: { start: startOfMonth(monthRef), end: endOfMonth(monthRef) },
+      year: { start: startOfYear(yearRef), end: endOfYear(yearRef) },
     };
     const result = {
       total: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
@@ -123,7 +128,17 @@ export function StudyCalendar({ compact = false }: Props) {
       });
     });
     return result;
-  }, [sessionsByDate, selectedDate]);
+  }, [sessionsByDate, statsMonth, statsYear]);
+
+  const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    const cy = new Date().getFullYear();
+    years.add(cy);
+    years.add(statsYear);
+    sessionsByDate.forEach((_, key) => years.add(parseISO(key).getFullYear()));
+    return Array.from(years).sort((a, b) => b - a);
+  }, [sessionsByDate, statsYear]);
 
   const formatTime = (mins: number) => {
     const h = Math.floor(mins / 60);
@@ -228,14 +243,34 @@ export function StudyCalendar({ compact = false }: Props) {
       <div className="space-y-4">
         {/* Aggregate stats */}
         <Card className="p-4">
-          <h3 className="font-semibold mb-3 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-primary" /> Resumo de estudos
-          </h3>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" /> Resumo de estudos
+            </h3>
+            <div className="flex items-center gap-2">
+              <Select value={String(statsMonth)} onValueChange={(v) => setStatsMonth(Number(v))}>
+                <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {monthNames.map((m, i) => (
+                    <SelectItem key={i} value={String(i)}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={String(statsYear)} onValueChange={(v) => setStatsYear(Number(v))}>
+                <SelectTrigger className="h-8 w-[90px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {availableYears.map(y => (
+                    <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {([
-              ['Semana', stats.week],
-              ['Mês', stats.month],
-              ['Ano', stats.year],
+              ['Semana atual', stats.week],
+              [monthNames[statsMonth], stats.month],
+              [String(statsYear), stats.year],
               ['Total', stats.total],
             ] as const).map(([label, s]) => (
               <div key={label} className="border rounded-md p-2.5">
