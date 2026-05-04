@@ -26,6 +26,8 @@ interface Props {
 
 export function StudyCalendar({ compact = false }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [statsMonth, setStatsMonth] = useState<number>(new Date().getMonth());
+  const [statsYear, setStatsYear] = useState<number>(new Date().getFullYear());
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [noteTitle, setNoteTitle] = useState('');
