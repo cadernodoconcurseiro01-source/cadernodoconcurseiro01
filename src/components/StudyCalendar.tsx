@@ -94,6 +94,37 @@ export function StudyCalendar({ compact = false }: Props) {
     { total: 0, correct: 0, wrong: 0 }
   );
 
+  // Aggregated stats: studied days and total minutes per period + per subject
+  const stats = useMemo(() => {
+    const now = selectedDate;
+    const ranges = {
+      week: { start: startOfWeek(now, { weekStartsOn: 0 }), end: endOfWeek(now, { weekStartsOn: 0 }) },
+      month: { start: startOfMonth(now), end: endOfMonth(now) },
+      year: { start: startOfYear(now), end: endOfYear(now) },
+    };
+    const result = {
+      total: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      week: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      month: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      year: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+    };
+    sessionsByDate.forEach((entry, key) => {
+      const d = parseISO(key);
+      const buckets: (keyof typeof result)[] = ['total'];
+      if (isWithinInterval(d, ranges.week)) buckets.push('week');
+      if (isWithinInterval(d, ranges.month)) buckets.push('month');
+      if (isWithinInterval(d, ranges.year)) buckets.push('year');
+      buckets.forEach(b => {
+        result[b].days += 1;
+        result[b].minutes += entry.totalMinutes;
+        entry.subjects.forEach((mins, sid) => {
+          result[b].perSubject.set(sid, (result[b].perSubject.get(sid) || 0) + mins);
+        });
+      });
+    });
+    return result;
+  }, [sessionsByDate, selectedDate]);
+
   const formatTime = (mins: number) => {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
