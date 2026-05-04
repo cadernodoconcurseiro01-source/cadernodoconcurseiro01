@@ -99,11 +99,13 @@ export function StudyCalendar({ compact = false }: Props) {
 
   // Aggregated stats: studied days and total minutes per period + per subject
   const stats = useMemo(() => {
-    const now = selectedDate;
+    const today = new Date();
+    const monthRef = new Date(statsYear, statsMonth, 1);
+    const yearRef = new Date(statsYear, 0, 1);
     const ranges = {
-      week: { start: startOfWeek(now, { weekStartsOn: 0 }), end: endOfWeek(now, { weekStartsOn: 0 }) },
-      month: { start: startOfMonth(now), end: endOfMonth(now) },
-      year: { start: startOfYear(now), end: endOfYear(now) },
+      week: { start: startOfWeek(today, { weekStartsOn: 0 }), end: endOfWeek(today, { weekStartsOn: 0 }) },
+      month: { start: startOfMonth(monthRef), end: endOfMonth(monthRef) },
+      year: { start: startOfYear(yearRef), end: endOfYear(yearRef) },
     };
     const result = {
       total: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
@@ -126,7 +128,17 @@ export function StudyCalendar({ compact = false }: Props) {
       });
     });
     return result;
-  }, [sessionsByDate, selectedDate]);
+  }, [sessionsByDate, statsMonth, statsYear]);
+
+  const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    const cy = new Date().getFullYear();
+    years.add(cy);
+    years.add(statsYear);
+    sessionsByDate.forEach((_, key) => years.add(parseISO(key).getFullYear()));
+    return Array.from(years).sort((a, b) => b - a);
+  }, [sessionsByDate, statsYear]);
 
   const formatTime = (mins: number) => {
     const h = Math.floor(mins / 60);
