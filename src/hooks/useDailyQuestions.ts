@@ -35,51 +35,58 @@
        const { data: { user } } = await supabase.auth.getUser();
        if (!user) throw new Error('Usuário não autenticado');
  
-       const questionDate = data.question_date || format(new Date(), 'yyyy-MM-dd');
- 
-       // Check if entry exists for this date and subject
-       const { data: existing } = await supabase
-         .from('daily_questions')
-         .select('*')
-         .eq('user_id', user.id)
-         .eq('subject_id', data.subject_id)
-         .eq('question_date', questionDate)
-         .maybeSingle();
- 
-       if (existing) {
-         // Update existing
-         const { data: updated, error } = await supabase
-           .from('daily_questions')
-           .update({
-             total_questions: existing.total_questions + data.total_questions,
-             correct_answers: existing.correct_answers + data.correct_answers,
-             wrong_answers: existing.wrong_answers + data.wrong_answers,
-           })
-           .eq('id', existing.id)
-           .select()
-           .single();
- 
-         if (error) throw error;
-         return updated;
-       } else {
-         // Insert new
-         const { data: inserted, error } = await supabase
-           .from('daily_questions')
-           .insert({
-             user_id: user.id,
-             subject_id: data.subject_id,
-             question_date: questionDate,
-             total_questions: data.total_questions,
-             correct_answers: data.correct_answers,
-             wrong_answers: data.wrong_answers,
-           })
-           .select()
-           .single();
- 
-         if (error) throw error;
-         return inserted;
-       }
-     },
+      const questionDate = data.question_date || format(new Date(), 'yyyy-MM-dd');
+
+      const performUpdate = async () => {
+        const { data: existing, error: selErr } = await supabase
+          .from('daily_questions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('subject_id', data.subject_id)
+          .eq('question_date', questionDate)
+          .maybeSingle();
+        if (selErr) throw selErr;
+        if (!existing) return null;
+        const { data: updated, error } = await supabase
+          .from('daily_questions')
+          .update({
+            total_questions: existing.total_questions + data.total_questions,
+            correct_answers: existing.correct_answers + data.correct_answers,
+            wrong_answers: existing.wrong_answers + data.wrong_answers,
+          })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return updated;
+      };
+
+      const updated = await performUpdate();
+      if (updated) return updated;
+
+      // Try insert; if duplicate (concurrent insert), fall back to update
+      const { data: inserted, error } = await supabase
+        .from('daily_questions')
+        .insert({
+          user_id: user.id,
+          subject_id: data.subject_id,
+          question_date: questionDate,
+          total_questions: data.total_questions,
+          correct_answers: data.correct_answers,
+          wrong_answers: data.wrong_answers,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        if ((error as any).code === '23505') {
+          const retried = await performUpdate();
+          if (retried) return retried;
+        }
+        throw error;
+      }
+      return inserted;
+    },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['daily-questions'] });
        toast.success('Questões registradas!');
