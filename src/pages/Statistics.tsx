@@ -12,6 +12,7 @@ import { StatsCard } from '@/components/StatsCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Clock, HelpCircle, Target, TrendingUp } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { useState, useMemo } from 'react';
 
 const ALL_CONTESTS_VALUE = 'all';
@@ -89,7 +90,7 @@ const StatisticsPage = () => {
     const dayMinutes = filteredSessions
       .filter(s => format(new Date(s.start_time), 'yyyy-MM-dd') === dateStr)
       .reduce((sum, s) => sum + s.duration, 0);
-    return { date: format(day, 'EEE'), minutes: dayMinutes };
+    return { date: format(day, 'EEE', { locale: ptBR }), minutes: dayMinutes };
   });
 
   const subjectStudyData = filteredSubjects.map(subject => {
@@ -106,7 +107,7 @@ const StatisticsPage = () => {
     const total = dayQuestions.reduce((sum, q) => sum + q.total_questions, 0);
     const correct = dayQuestions.reduce((sum, q) => sum + q.correct_answers, 0);
     return {
-      date: format(day, 'EEE'),
+      date: format(day, 'EEE', { locale: ptBR }),
       total,
       correct,
       wrong: total - correct,
