@@ -145,8 +145,8 @@
  
    const getWeeklyStats = (subjects: Subject[]) => {
      const today = new Date();
-     const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-     const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+    const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+    const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
      const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
  
      return days.map(day => {
