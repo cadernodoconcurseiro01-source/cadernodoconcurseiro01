@@ -66,8 +66,8 @@ const StatisticsPage = () => {
 
   // Compute stats based on filtered data
   const weekMinutes = useMemo(() => {
-    const wStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-    const wEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+    const wStart = startOfWeek(new Date(), { weekStartsOn: 0 });
+    const wEnd = endOfWeek(new Date(), { weekStartsOn: 0 });
     return filteredSessions
       .filter(s => {
         const d = new Date(s.start_time);
@@ -84,8 +84,8 @@ const StatisticsPage = () => {
 
   // Prepare weekly study data
   const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+  const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+  const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
   const weeklyStudyData = days.map(day => {
