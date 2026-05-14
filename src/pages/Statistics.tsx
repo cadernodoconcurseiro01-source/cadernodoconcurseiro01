@@ -66,10 +66,13 @@ const StatisticsPage = () => {
 
   // Compute stats based on filtered data
   const weekMinutes = useMemo(() => {
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - 7);
+    const wStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const wEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
     return filteredSessions
-      .filter(s => new Date(s.start_time) >= weekStart)
+      .filter(s => {
+        const d = new Date(s.start_time);
+        return d >= wStart && d <= wEnd;
+      })
       .reduce((sum, s) => sum + s.duration, 0);
   }, [filteredSessions]);
 
