@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, Clock, BookOpen, FileText, Trophy, Pencil, X, ListChecks, FileBarChart } from 'lucide-react';
+import { Trash2, Plus, Clock, BookOpen, FileText, Trophy, Pencil, X, ListChecks, FileBarChart, RotateCcw, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useSessions } from '@/hooks/useSessions';
@@ -18,6 +18,7 @@ import { useContests } from '@/hooks/useContests';
 import { useCalendarNotes, useCalendarEvents } from '@/hooks/useCalendar';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
 import { useSimulados } from '@/hooks/useSimulados';
+import { useStudyRevisions } from '@/hooks/useStudyRevisions';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
@@ -44,6 +45,10 @@ export function StudyCalendar({ compact = false }: Props) {
   const { events, addEventAsync, deleteEventAsync } = useCalendarEvents();
   const { dailyQuestions } = useDailyQuestions();
   const { simulados } = useSimulados();
+  const { revisions, toggleRevisionAsync } = useStudyRevisions();
+
+  const revisionDateSet = useMemo(() => new Set(revisions.map(r => r.revision_date)), [revisions]);
+  const revisionDates = useMemo(() => revisions.map(r => parseISO(r.revision_date)), [revisions]);
 
   const subjectMap = useMemo(() => {
     const m = new Map<string, { name: string; color: string }>();
@@ -97,6 +102,8 @@ export function StudyCalendar({ compact = false }: Props) {
     { total: 0, correct: 0, wrong: 0 }
   );
 
+  const dayIsRevised = revisionDateSet.has(selectedKey);
+
   // Aggregated stats: studied days and total minutes per period + per subject
   const stats = useMemo(() => {
     const today = new Date();
@@ -108,27 +115,46 @@ export function StudyCalendar({ compact = false }: Props) {
       year: { start: startOfYear(yearRef), end: endOfYear(yearRef) },
     };
     const result = {
-      total: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
-      week: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
-      month: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
-      year: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      total: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+      week: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+      month: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+      year: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+    };
+    const countedDays: Record<keyof typeof result, Set<string>> = {
+      total: new Set(), week: new Set(), month: new Set(), year: new Set(),
+    };
+    const bucketsFor = (d: Date): (keyof typeof result)[] => {
+      const b: (keyof typeof result)[] = ['total'];
+      if (isWithinInterval(d, ranges.week)) b.push('week');
+      if (isWithinInterval(d, ranges.month)) b.push('month');
+      if (isWithinInterval(d, ranges.year)) b.push('year');
+      return b;
     };
     sessionsByDate.forEach((entry, key) => {
       const d = parseISO(key);
-      const buckets: (keyof typeof result)[] = ['total'];
-      if (isWithinInterval(d, ranges.week)) buckets.push('week');
-      if (isWithinInterval(d, ranges.month)) buckets.push('month');
-      if (isWithinInterval(d, ranges.year)) buckets.push('year');
-      buckets.forEach(b => {
-        result[b].days += 1;
+      bucketsFor(d).forEach(b => {
+        if (!countedDays[b].has(key)) {
+          countedDays[b].add(key);
+          result[b].days += 1;
+        }
         result[b].minutes += entry.totalMinutes;
         entry.subjects.forEach((mins, sid) => {
           result[b].perSubject.set(sid, (result[b].perSubject.get(sid) || 0) + mins);
         });
       });
     });
+    revisions.forEach(r => {
+      const d = parseISO(r.revision_date);
+      bucketsFor(d).forEach(b => {
+        result[b].revisions += 1;
+        if (!countedDays[b].has(r.revision_date)) {
+          countedDays[b].add(r.revision_date);
+          result[b].days += 1;
+        }
+      });
+    });
     return result;
-  }, [sessionsByDate, statsMonth, statsYear]);
+  }, [sessionsByDate, revisions, statsMonth, statsYear]);
 
   const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const availableYears = useMemo(() => {
@@ -200,11 +226,13 @@ export function StudyCalendar({ compact = false }: Props) {
             studied: studiedDates,
             exam: examDates,
             hasNote: noteDates,
+            revised: revisionDates,
           }}
           modifiersClassNames={{
             studied: 'bg-primary/15 text-primary font-semibold',
             exam: 'ring-2 ring-destructive ring-offset-1',
             hasNote: 'underline decoration-accent decoration-2 underline-offset-4',
+            revised: 'bg-warning/20 text-warning-foreground',
           }}
           className="pointer-events-auto"
           classNames={{
@@ -234,6 +262,7 @@ export function StudyCalendar({ compact = false }: Props) {
         />
         <div className="mt-4 space-y-1.5 text-xs text-muted-foreground border-t pt-3">
           <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-primary/30" /> Dia estudado</div>
+          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-warning/40" /> Revisão</div>
           <div className="flex items-center gap-2"><span className="w-3 h-3 rounded ring-2 ring-destructive" /> Prova / Evento</div>
           <div className="flex items-center gap-2"><span className="w-3 h-0.5 bg-accent" /> Tem anotação</div>
         </div>
@@ -277,6 +306,9 @@ export function StudyCalendar({ compact = false }: Props) {
                 <div className="text-xs text-muted-foreground">{label}</div>
                 <div className="text-lg font-semibold">{s.days} {s.days === 1 ? 'dia' : 'dias'}</div>
                 <div className="text-xs text-muted-foreground">{formatTime(s.minutes)}</div>
+                <div className="text-xs text-warning mt-0.5 flex items-center gap-1">
+                  <RotateCcw className="w-3 h-3" /> {s.revisions} {s.revisions === 1 ? 'revisão' : 'revisões'}
+                </div>
               </div>
             ))}
           </div>
@@ -443,7 +475,16 @@ export function StudyCalendar({ compact = false }: Props) {
             )}
           </div>
 
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Button
+              size="sm"
+              variant={dayIsRevised ? 'default' : 'outline'}
+              className="gap-1"
+              onClick={() => toggleRevisionAsync({ date: selectedKey, marked: dayIsRevised }).catch(() => {})}
+            >
+              {dayIsRevised ? <Check className="w-3.5 h-3.5" /> : <RotateCcw className="w-3.5 h-3.5" />}
+              {dayIsRevised ? 'Revisão feita' : 'Marcar revisão'}
+            </Button>
             <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="outline" className="gap-1">

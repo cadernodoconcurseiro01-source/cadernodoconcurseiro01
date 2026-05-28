@@ -416,6 +416,27 @@ export type Database = {
         }
         Relationships: []
       }
+      study_revisions: {
+        Row: {
+          created_at: string
+          id: string
+          revision_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          revision_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          revision_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           created_at: string
