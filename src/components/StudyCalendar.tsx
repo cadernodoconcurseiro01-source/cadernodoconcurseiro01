@@ -102,6 +102,8 @@ export function StudyCalendar({ compact = false }: Props) {
     { total: 0, correct: 0, wrong: 0 }
   );
 
+  const dayIsRevised = revisionDateSet.has(selectedKey);
+
   // Aggregated stats: studied days and total minutes per period + per subject
   const stats = useMemo(() => {
     const today = new Date();
