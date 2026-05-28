@@ -226,11 +226,13 @@ export function StudyCalendar({ compact = false }: Props) {
             studied: studiedDates,
             exam: examDates,
             hasNote: noteDates,
+            revised: revisionDates,
           }}
           modifiersClassNames={{
             studied: 'bg-primary/15 text-primary font-semibold',
             exam: 'ring-2 ring-destructive ring-offset-1',
             hasNote: 'underline decoration-accent decoration-2 underline-offset-4',
+            revised: 'bg-warning/20 text-warning-foreground',
           }}
           className="pointer-events-auto"
           classNames={{
