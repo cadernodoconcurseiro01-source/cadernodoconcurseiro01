@@ -115,27 +115,46 @@ export function StudyCalendar({ compact = false }: Props) {
       year: { start: startOfYear(yearRef), end: endOfYear(yearRef) },
     };
     const result = {
-      total: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
-      week: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
-      month: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
-      year: { days: 0, minutes: 0, perSubject: new Map<string, number>() },
+      total: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+      week: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+      month: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+      year: { days: 0, minutes: 0, revisions: 0, perSubject: new Map<string, number>() },
+    };
+    const countedDays: Record<keyof typeof result, Set<string>> = {
+      total: new Set(), week: new Set(), month: new Set(), year: new Set(),
+    };
+    const bucketsFor = (d: Date): (keyof typeof result)[] => {
+      const b: (keyof typeof result)[] = ['total'];
+      if (isWithinInterval(d, ranges.week)) b.push('week');
+      if (isWithinInterval(d, ranges.month)) b.push('month');
+      if (isWithinInterval(d, ranges.year)) b.push('year');
+      return b;
     };
     sessionsByDate.forEach((entry, key) => {
       const d = parseISO(key);
-      const buckets: (keyof typeof result)[] = ['total'];
-      if (isWithinInterval(d, ranges.week)) buckets.push('week');
-      if (isWithinInterval(d, ranges.month)) buckets.push('month');
-      if (isWithinInterval(d, ranges.year)) buckets.push('year');
-      buckets.forEach(b => {
-        result[b].days += 1;
+      bucketsFor(d).forEach(b => {
+        if (!countedDays[b].has(key)) {
+          countedDays[b].add(key);
+          result[b].days += 1;
+        }
         result[b].minutes += entry.totalMinutes;
         entry.subjects.forEach((mins, sid) => {
           result[b].perSubject.set(sid, (result[b].perSubject.get(sid) || 0) + mins);
         });
       });
     });
+    revisions.forEach(r => {
+      const d = parseISO(r.revision_date);
+      bucketsFor(d).forEach(b => {
+        result[b].revisions += 1;
+        if (!countedDays[b].has(r.revision_date)) {
+          countedDays[b].add(r.revision_date);
+          result[b].days += 1;
+        }
+      });
+    });
     return result;
-  }, [sessionsByDate, statsMonth, statsYear]);
+  }, [sessionsByDate, revisions, statsMonth, statsYear]);
 
   const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const availableYears = useMemo(() => {
