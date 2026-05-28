@@ -262,6 +262,7 @@ export function StudyCalendar({ compact = false }: Props) {
         />
         <div className="mt-4 space-y-1.5 text-xs text-muted-foreground border-t pt-3">
           <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-primary/30" /> Dia estudado</div>
+          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-warning/40" /> Revisão</div>
           <div className="flex items-center gap-2"><span className="w-3 h-3 rounded ring-2 ring-destructive" /> Prova / Evento</div>
           <div className="flex items-center gap-2"><span className="w-3 h-0.5 bg-accent" /> Tem anotação</div>
         </div>
