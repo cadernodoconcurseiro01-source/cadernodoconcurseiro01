@@ -306,6 +306,9 @@ export function StudyCalendar({ compact = false }: Props) {
                 <div className="text-xs text-muted-foreground">{label}</div>
                 <div className="text-lg font-semibold">{s.days} {s.days === 1 ? 'dia' : 'dias'}</div>
                 <div className="text-xs text-muted-foreground">{formatTime(s.minutes)}</div>
+                <div className="text-xs text-warning mt-0.5 flex items-center gap-1">
+                  <RotateCcw className="w-3 h-3" /> {s.revisions} {s.revisions === 1 ? 'revisão' : 'revisões'}
+                </div>
               </div>
             ))}
           </div>
