@@ -475,7 +475,16 @@ export function StudyCalendar({ compact = false }: Props) {
             )}
           </div>
 
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Button
+              size="sm"
+              variant={dayIsRevised ? 'default' : 'outline'}
+              className="gap-1"
+              onClick={() => toggleRevisionAsync({ date: selectedKey, marked: dayIsRevised }).catch(() => {})}
+            >
+              {dayIsRevised ? <Check className="w-3.5 h-3.5" /> : <RotateCcw className="w-3.5 h-3.5" />}
+              {dayIsRevised ? 'Revisão feita' : 'Marcar revisão'}
+            </Button>
             <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="outline" className="gap-1">
