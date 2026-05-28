@@ -45,6 +45,10 @@ export function StudyCalendar({ compact = false }: Props) {
   const { events, addEventAsync, deleteEventAsync } = useCalendarEvents();
   const { dailyQuestions } = useDailyQuestions();
   const { simulados } = useSimulados();
+  const { revisions, toggleRevisionAsync } = useStudyRevisions();
+
+  const revisionDateSet = useMemo(() => new Set(revisions.map(r => r.revision_date)), [revisions]);
+  const revisionDates = useMemo(() => revisions.map(r => parseISO(r.revision_date)), [revisions]);
 
   const subjectMap = useMemo(() => {
     const m = new Map<string, { name: string; color: string }>();
