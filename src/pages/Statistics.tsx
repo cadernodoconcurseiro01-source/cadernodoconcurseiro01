@@ -44,8 +44,6 @@ const StatisticsPage = () => {
     return Array.from(merged.values());
   }, [subjects, selectedContestId, getSubjectsForContest]);
 
-  const filteredSubjectIds = useMemo(() => new Set(filteredSubjects.map(s => s.id)), [filteredSubjects]);
-
   // Pomodoro sessions carry their contest explicitly so shared subjects are never counted twice.
   const filteredSessions = useMemo(() => {
     if (selectedContestId === ALL_CONTESTS_VALUE) return sessions;
