@@ -36,10 +36,13 @@ export function orderSubjectsByDifficulty(subjects: Subject[]): Subject[] {
 
   while (high.length > 0 || others.length > 0) {
     if (high.length > 0) {
-      result.push(high.shift()!);
-      if (others.length > 0) result.push(others.shift()!);
+      const nextHigh = high.shift();
+      if (nextHigh) result.push(nextHigh);
+      const nextOther = others.shift();
+      if (nextOther) result.push(nextOther);
     } else {
-      result.push(others.shift()!);
+      const nextOther = others.shift();
+      if (nextOther) result.push(nextOther);
     }
   }
 

@@ -104,8 +104,8 @@ export interface Contest {
   study_plan_type: StudyPlanType;
   cycle_days: number;
   cycle_number: number;
-  total_cycles: number;
-  current_day: number;
+  total_cycles?: number;
+  current_day?: number;
   subjects_per_day: number;
   study_periods: StudyPeriod[];
   is_active: boolean;
