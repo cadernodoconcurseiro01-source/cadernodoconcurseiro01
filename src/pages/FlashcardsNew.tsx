@@ -58,14 +58,14 @@ const FlashcardsPage = () => {
     setExpandedSubjects(newExpanded);
   };
 
-  const handleReview = (params: { id: string; quality: number }) => {
+  const handleReview = async (params: { id: string; quality: number }) => {
     try {
-      reviewFlashcard(params);
+      await reviewFlashcard(params);
       
       // Track flashcard review time (approximate 1 minute per card)
       const card = flashcards.find(f => f.id === params.id);
       if (card) {
-        addSession({ subjectId: card.subject_id, duration: 1, type: 'flashcard' });
+        await addSession({ subjectId: card.subject_id, duration: 1, type: 'flashcard' });
       }
     } catch (error) {
       console.error('Error reviewing flashcard:', error);
