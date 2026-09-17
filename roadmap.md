@@ -10,4 +10,4 @@
 - [x] Corrigir as disciplinas exibidas ao registrar questões por concurso.
 - [x] Vincular cada registro de questões ao concurso e separar as estatísticas.
 - [x] Mostrar desempenho por disciplina nos simulados filtrados.
-- [ ] Validar os fluxos corrigidos.
+- [x] Validar os fluxos corrigidos.
