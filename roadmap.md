@@ -11,3 +11,4 @@
 - [x] Vincular cada registro de questões ao concurso e separar as estatísticas.
 - [x] Mostrar desempenho por disciplina nos simulados filtrados.
 - [x] Validar os fluxos corrigidos.
+- [x] Restaurar e habilitar a entrada com Google.
