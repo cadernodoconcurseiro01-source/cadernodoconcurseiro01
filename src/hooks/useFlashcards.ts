@@ -158,8 +158,8 @@ export function useFlashcards() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['flashcards'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['flashcards'] });
     },
     onError: (error) => {
       toast.error('Erro ao atualizar flashcard');
