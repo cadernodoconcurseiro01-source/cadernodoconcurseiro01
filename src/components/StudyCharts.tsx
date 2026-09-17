@@ -213,36 +213,6 @@
                </div>
              )}
            </div>
-            <div>
-              <h3 className="font-display font-semibold flex items-center gap-2 mb-4">
-                <BarChart3 className="w-4 h-4 text-accent" />
-                Desempenho por Disciplina nos Simulados
-              </h3>
-              {simuladoSubjectData.length > 0 ? (
-                <div className="space-y-3">
-                  {simuladoSubjectData.map(subject => (
-                    <div key={subject.name} className="space-y-1">
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <div className="h-3 w-3 flex-shrink-0 rounded-full" style={{ backgroundColor: subject.color }} />
-                          <span className="truncate">{subject.name}</span>
-                        </div>
-                        <span className="flex-shrink-0 text-muted-foreground">
-                          {subject.correct}/{subject.total} acertos • {subject.wrong} erros • {subject.percentage}%
-                        </span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${subject.percentage}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex h-[100px] items-center justify-center text-muted-foreground">
-                  Nenhum desempenho por disciplina registrado
-                </div>
-              )}
-            </div>
          </TabsContent>
  
          <TabsContent value="simulados" className="space-y-6">
@@ -286,6 +256,36 @@
                </div>
              )}
            </div>
+            <div>
+              <h3 className="font-display font-semibold flex items-center gap-2 mb-4">
+                <BarChart3 className="w-4 h-4 text-accent" />
+                Desempenho por Disciplina nos Simulados
+              </h3>
+              {simuladoSubjectData.length > 0 ? (
+                <div className="space-y-3">
+                  {simuladoSubjectData.map(subject => (
+                    <div key={subject.name} className="space-y-1">
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <div className="h-3 w-3 flex-shrink-0 rounded-full" style={{ backgroundColor: subject.color }} />
+                          <span className="truncate">{subject.name}</span>
+                        </div>
+                        <span className="flex-shrink-0 text-muted-foreground">
+                          {subject.correct}/{subject.total} acertos • {subject.wrong} erros • {subject.percentage}%
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${subject.percentage}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[100px] items-center justify-center text-muted-foreground">
+                  Nenhum desempenho por disciplina registrado
+                </div>
+              )}
+            </div>
          </TabsContent>
        </Tabs>
      </Card>
