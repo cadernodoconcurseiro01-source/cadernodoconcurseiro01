@@ -30,6 +30,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
   const [studyPlanType, setStudyPlanType] = useState<StudyPlanType>('cycle');
   const [cycleDays, setCycleDays] = useState(7);
   const [cycleNumber, setCycleNumber] = useState(1);
+  const [totalCycles, setTotalCycles] = useState(1);
+  const [currentDay, setCurrentDay] = useState(1);
   const [subjectsPerDay, setSubjectsPerDay] = useState(4);
   const [studyPeriods, setStudyPeriods] = useState<StudyPeriod[]>(['morning', 'afternoon', 'evening']);
 
@@ -44,6 +46,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
       setStudyPlanType(editingContest.study_plan_type);
       setCycleDays(editingContest.cycle_days);
       setCycleNumber(editingContest.cycle_number);
+      setTotalCycles(editingContest.total_cycles ?? 1);
+      setCurrentDay(editingContest.current_day ?? 1);
       setSubjectsPerDay(editingContest.subjects_per_day ?? 4);
       setStudyPeriods(editingContest.study_periods ?? ['morning', 'afternoon', 'evening']);
     }
@@ -68,12 +72,16 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
 
     try {
       const safeStudyPlanType: StudyPlanType = studyPlanType === 'plan' ? 'plan' : 'cycle';
+      const safeCycleDays = Math.max(1, cycleDays || 7);
+      const safeTotalCycles = Math.max(1, totalCycles || 1);
       const contestData = {
         name: name.trim(),
         exam_date: examDate || null,
         study_plan_type: safeStudyPlanType,
-        cycle_days: Math.max(1, cycleDays || 7),
-        cycle_number: Math.max(1, cycleNumber || 1),
+        cycle_days: safeCycleDays,
+        cycle_number: Math.min(Math.max(1, cycleNumber || 1), safeTotalCycles),
+        total_cycles: safeTotalCycles,
+        current_day: Math.min(Math.max(1, currentDay || 1), safeCycleDays),
         subjects_per_day: Math.max(1, subjectsPerDay || 4),
         study_periods: studyPeriods,
         is_active: true,
@@ -100,6 +108,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
       setStudyPlanType('cycle');
       setCycleDays(7);
       setCycleNumber(1);
+      setTotalCycles(1);
+      setCurrentDay(1);
       setSubjectsPerDay(4);
       setStudyPeriods(['morning', 'afternoon', 'evening']);
     }
@@ -207,22 +217,22 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cycleNumber">Número do {studyPlanType === 'cycle' ? 'Ciclo' : 'Plano'}</Label>
+              <Label htmlFor="totalCycles">Quantos {studyPlanType === 'cycle' ? 'ciclos' : 'planos'} gerar</Label>
               <Input
-                id="cycleNumber"
+                id="totalCycles"
                 type="number"
                 min={1}
-                max={99}
-                value={cycleNumber}
-                onChange={(e) => setCycleNumber(Number(e.target.value))}
+                max={24}
+                value={totalCycles}
+                onChange={(e) => setTotalCycles(Number(e.target.value))}
               />
               <p className="text-xs text-muted-foreground">
-                Ex: 1º {studyPlanType === 'cycle' ? 'Ciclo' : 'Plano'}, 2º {studyPlanType === 'cycle' ? 'Ciclo' : 'Plano'}...
+                Ex: 2 {studyPlanType === 'cycle' ? 'ciclos' : 'planos'} de {Math.max(1, cycleDays || 7)} dias
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cycleDays">Dias do {studyPlanType === 'cycle' ? 'Ciclo' : 'Plano'}</Label>
+              <Label htmlFor="cycleDays">Dias de cada {studyPlanType === 'cycle' ? 'ciclo' : 'plano'}</Label>
               <Input
                 id="cycleDays"
                 type="number"
@@ -233,6 +243,36 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
               />
               <p className="text-xs text-muted-foreground">
                 Quantos dias dura
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cycleNumber">{studyPlanType === 'cycle' ? 'Ciclo' : 'Plano'} atual</Label>
+              <Input
+                id="cycleNumber"
+                type="number"
+                min={1}
+                max={Math.max(1, totalCycles || 1)}
+                value={cycleNumber}
+                onChange={(e) => setCycleNumber(Number(e.target.value))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Em qual você está agora
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currentDay">Dia atual</Label>
+              <Input
+                id="currentDay"
+                type="number"
+                min={1}
+                max={Math.max(1, cycleDays || 7)}
+                value={currentDay}
+                onChange={(e) => setCurrentDay(Number(e.target.value))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Dia dentro do {studyPlanType === 'cycle' ? 'ciclo' : 'plano'}
               </p>
             </div>
           </div>
