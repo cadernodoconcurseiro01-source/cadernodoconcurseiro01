@@ -26,6 +26,7 @@
  
    const addOrUpdateDailyQuestions = useMutation({
      mutationFn: async (data: { 
+        contest_id: string | null;
        subject_id: string; 
        total_questions: number; 
        correct_answers: number; 
@@ -44,6 +45,7 @@
           .eq('user_id', user.id)
           .eq('subject_id', data.subject_id)
           .eq('question_date', questionDate)
+          .is('contest_id', data.contest_id)
           .maybeSingle();
         if (selErr) throw selErr;
         if (!existing) return null;
@@ -69,6 +71,7 @@
         .from('daily_questions')
         .insert({
           user_id: user.id,
+           contest_id: data.contest_id,
           subject_id: data.subject_id,
           question_date: questionDate,
           total_questions: data.total_questions,

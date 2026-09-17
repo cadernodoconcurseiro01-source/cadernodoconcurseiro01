@@ -139,6 +139,7 @@ export interface Simulado {
 export interface DailyQuestion {
   id: string;
   user_id: string;
+  contest_id: string | null;
   subject_id: string;
   question_date: string;
   total_questions: number;

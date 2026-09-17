@@ -25,11 +25,8 @@ const QuestionsPage = () => {
   const totalStats = getTotalStats();
   const isLoading = subjectsLoading || questionsLoading;
 
-  // Helper to find contest names for a subject
-  const getContestNamesForSubject = (subjectId: string): string[] => {
-    const contestIds = mappings.filter(m => m.subject_id === subjectId).map(m => m.contest_id);
-    return contests.filter(c => contestIds.includes(c.id)).map(c => c.name);
-  };
+  const getContestName = (contestId: string | null): string | null =>
+    contests.find(contest => contest.id === contestId)?.name || null;
 
   const groupedByDate = dailyQuestions.reduce((acc, q) => {
     const date = q.question_date;
@@ -141,7 +138,7 @@ const QuestionsPage = () => {
                 <div className="space-y-3">
                   {questions.map((q) => {
                     const subject = subjects.find(s => s.id === q.subject_id);
-                    const contestNames = getContestNamesForSubject(q.subject_id);
+                    const contestName = getContestName(q.contest_id);
                     const percentage = q.total_questions > 0 
                       ? Math.round((q.correct_answers / q.total_questions) * 100) 
                       : 0;
@@ -158,14 +155,12 @@ const QuestionsPage = () => {
                           />
                           <div className="min-w-0">
                             <span className="font-medium">{subject?.name || 'Matéria'}</span>
-                            {contestNames.length > 0 && (
+                            {contestName && (
                               <div className="flex flex-wrap gap-1 mt-0.5">
-                                {contestNames.map(name => (
-                                  <Badge key={name} variant="outline" className="text-[10px] gap-1 py-0">
-                                    <Trophy className="w-2.5 h-2.5" />
-                                    {name}
-                                  </Badge>
-                                ))}
+                                <Badge variant="outline" className="text-[10px] gap-1 py-0">
+                                  <Trophy className="w-2.5 h-2.5" />
+                                  {contestName}
+                                </Badge>
                               </div>
                             )}
                           </div>

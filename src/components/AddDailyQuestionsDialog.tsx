@@ -13,6 +13,7 @@ const NO_CONTEST_VALUE = 'no-contest';
 
 interface AddDailyQuestionsDialogProps {
   onAdd: (data: { 
+    contest_id: string | null;
     subject_id: string; 
     total_questions: number; 
     correct_answers: number; 
@@ -34,7 +35,10 @@ export function AddDailyQuestionsDialog({ onAdd, subjects, contests = [], contes
   const [wrongAnswers, setWrongAnswers] = useState(0);
 
   const filteredSubjects = selectedContestId && selectedContestId !== NO_CONTEST_VALUE
-    ? subjects.filter(s => contestSubjectMappings.some(m => m.contest_id === selectedContestId && m.subject_id === s.id))
+    ? subjects.filter(s =>
+        s.contest_id === selectedContestId ||
+        contestSubjectMappings.some(m => m.contest_id === selectedContestId && m.subject_id === s.id)
+      )
     : subjects;
 
   const handleTotalChange = (value: number) => {
@@ -68,6 +72,7 @@ export function AddDailyQuestionsDialog({ onAdd, subjects, contests = [], contes
 
     try {
       await onAdd({
+        contest_id: selectedContestId || null,
         subject_id: subjectId,
         question_date: questionDate,
         total_questions: totalQuestions,
@@ -121,7 +126,7 @@ export function AddDailyQuestionsDialog({ onAdd, subjects, contests = [], contes
                   <SelectValue placeholder="Filtrar por concurso" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NO_CONTEST_VALUE}>Todas as disciplinas</SelectItem>
+                  <SelectItem value={NO_CONTEST_VALUE}>Todos os concursos</SelectItem>
                   {contests.map(c => (
                     <SelectItem key={c.id} value={c.id}>
                       <div className="flex items-center gap-2">
