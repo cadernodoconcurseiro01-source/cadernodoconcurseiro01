@@ -15,6 +15,8 @@ import { useSimulados } from '@/hooks/useSimulados';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
 import { useStudyCompletion } from '@/hooks/useStudyCompletion';
 import { useContestSubjects } from '@/hooks/useContestSubjects';
+import { useContestCycleSlots } from '@/hooks/useContestCycleSlots';
+import { generateCyclesPlan, getContestCycleSettings, getPlanDay } from '@/lib/studyPlan';
 
 const periodConfig = {
   morning: { icon: Sun, label: 'Manhã', time: '06:00 - 12:00' },
@@ -30,43 +32,21 @@ const difficultyConfig = {
 
 function generateScheduleFromContest(
   subjects: Subject[],
-  contest: Contest
+  contest: Contest,
+  overrides: Map<string, string>
 ): StudyScheduleItem[] {
   if (subjects.length === 0) return [];
 
-  const cycleDays = contest.cycle_days || 7;
-  const currentDay = contest.cycle_number || 1;
-  const dayIndex = (currentDay - 1) % cycleDays;
-
-  // Use the contest's subjects_per_day setting
-  const subjectsPerDay = Math.min(contest.subjects_per_day || 1, subjects.length);
-  const startIdx = (dayIndex * subjectsPerDay) % subjects.length;
-
-  const todaySubjects: Subject[] = [];
-  for (let i = 0; i < Math.min(subjectsPerDay, subjects.length); i++) {
-    const idx = (startIdx + i) % subjects.length;
-    todaySubjects.push(subjects[idx]);
-  }
-
-  // Sort: high difficulty first (morning), then medium, then low
-  todaySubjects.sort((a, b) => {
-    const order: Record<DifficultyLevel, number> = { high: 0, medium: 1, low: 2 };
-    return order[a.difficulty] - order[b.difficulty];
+  const settings = getContestCycleSettings(contest);
+  const plan = generateCyclesPlan({
+    subjects,
+    cycleDays: settings.cycleDays,
+    subjectsPerDay: settings.subjectsPerDay,
+    totalCycles: settings.totalCycles,
+    overrides,
   });
-
-  // Ensure no two high in sequence
-  const reordered: Subject[] = [];
-  const highQ: Subject[] = todaySubjects.filter(s => s.difficulty === 'high');
-  const others: Subject[] = todaySubjects.filter(s => s.difficulty !== 'high');
-
-  while (highQ.length > 0 || others.length > 0) {
-    if (highQ.length > 0) {
-      reordered.push(highQ.shift()!);
-      if (others.length > 0) reordered.push(others.shift()!);
-    } else {
-      reordered.push(others.shift()!);
-    }
-  }
+  const today = getPlanDay(plan, settings.currentCycle, settings.currentDay);
+  const reordered = today?.slots.map(slot => slot.subject) || [];
 
   // Use contest's study_periods setting
   const availablePeriods = contest.study_periods && contest.study_periods.length > 0 
@@ -95,6 +75,7 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
   const { addOrUpdateDailyQuestionsAsync } = useDailyQuestions();
   const { completedItems, toggleComplete } = useStudyCompletion();
   const { getSubjectsForContest, mappings } = useContestSubjects();
+  const { overridesFor } = useContestCycleSlots();
 
   const [selectedContestId, setSelectedContestId] = useState<string>('');
 
@@ -121,8 +102,8 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
 
   const schedule = useMemo(() => {
     if (!selectedContest || contestSubjects.length === 0) return [];
-    return generateScheduleFromContest(contestSubjects, selectedContest);
-  }, [selectedContest, contestSubjects]);
+    return generateScheduleFromContest(contestSubjects, selectedContest, overridesFor(selectedContest.id));
+  }, [selectedContest, contestSubjects, overridesFor]);
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -220,7 +201,8 @@ export function DashboardStudySchedule({ subjects }: DashboardStudyScheduleProps
                 <h3 className="font-display font-semibold">Cronograma de Hoje</h3>
               </div>
               <Link to={`/contests/${selectedContest.id}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">
-                {selectedContest.name} — {selectedContest.cycle_number || 1}º Ciclo
+                {selectedContest.name} — {selectedContest.cycle_number || 1}º{' '}
+                {selectedContest.study_plan_type === 'cycle' ? 'Ciclo' : 'Plano'} — Dia {selectedContest.current_day || 1}
               </Link>
             </div>
             <Badge variant={completedCount === schedule.length ? "default" : "secondary"}>

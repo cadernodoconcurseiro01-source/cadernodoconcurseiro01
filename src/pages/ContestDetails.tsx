@@ -11,7 +11,7 @@ import { useSimulados } from '@/hooks/useSimulados';
 import { useDailyQuestions } from '@/hooks/useDailyQuestions';
 import { AddSubjectDialogNew } from '@/components/AddSubjectDialogNew';
 import { LinkExistingSubjectDialog } from '@/components/LinkExistingSubjectDialog';
-import { StudySequenceTable } from '@/components/StudySequenceTable';
+import { ContestCyclesPlan } from '@/components/ContestCyclesPlan';
 import { format, parseISO, isValid, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DifficultyLevel } from '@/types/database';
@@ -145,7 +145,11 @@ const ContestDetailsPage = () => {
               )}
               <div className="flex items-center gap-1">
                 {contest.study_plan_type === 'cycle' ? <RefreshCw className="w-4 h-4" /> : <Layers className="w-4 h-4" />}
-                <span>{contest.cycle_number || 1}º {contest.study_plan_type === 'cycle' ? 'Ciclo' : 'Plano'} • {contest.cycle_days || 7} dias</span>
+                <span>
+                  {contest.cycle_number || 1}º {contest.study_plan_type === 'cycle' ? 'Ciclo' : 'Plano'}
+                  {' • '}Dia {contest.current_day || 1} de {contest.cycle_days || 7}
+                  {' • '}{contest.total_cycles || 1} {contest.study_plan_type === 'cycle' ? 'ciclo(s)' : 'plano(s)'}
+                </span>
               </div>
             </div>
           </div>
@@ -290,15 +294,9 @@ const ContestDetailsPage = () => {
         <section className="animate-fade-in">
           <h2 className="font-display text-xl font-semibold flex items-center gap-2 mb-4">
             <CheckCircle className="w-5 h-5 text-primary" />
-            Sequência de Estudos
+            {contest.study_plan_type === 'cycle' ? 'Ciclos de Estudos' : 'Planos de Estudos'}
           </h2>
-          <StudySequenceTable 
-            subjects={contestSubjects} 
-            cycleDays={contest.cycle_days || 7}
-            planType={contest.study_plan_type}
-            subjectsPerDay={contest.subjects_per_day || 1}
-            currentDay={contest.cycle_number || 1}
-          />
+          <ContestCyclesPlan contest={contest} subjects={contestSubjects} />
         </section>
       )}
     </div>
