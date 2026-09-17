@@ -26,6 +26,7 @@
  
    const addOrUpdateDailyQuestions = useMutation({
      mutationFn: async (data: { 
+        contest_id: string | null;
        subject_id: string; 
        total_questions: number; 
        correct_answers: number; 
@@ -38,13 +39,16 @@
       const questionDate = data.question_date || format(new Date(), 'yyyy-MM-dd');
 
       const performUpdate = async () => {
-        const { data: existing, error: selErr } = await supabase
+        let existingQuery = supabase
           .from('daily_questions')
           .select('*')
           .eq('user_id', user.id)
           .eq('subject_id', data.subject_id)
-          .eq('question_date', questionDate)
-          .maybeSingle();
+          .eq('question_date', questionDate);
+        existingQuery = data.contest_id
+          ? existingQuery.eq('contest_id', data.contest_id)
+          : existingQuery.is('contest_id', null);
+        const { data: existing, error: selErr } = await existingQuery.maybeSingle();
         if (selErr) throw selErr;
         if (!existing) return null;
         const { data: updated, error } = await supabase
@@ -69,6 +73,7 @@
         .from('daily_questions')
         .insert({
           user_id: user.id,
+           contest_id: data.contest_id,
           subject_id: data.subject_id,
           question_date: questionDate,
           total_questions: data.total_questions,

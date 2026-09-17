@@ -217,6 +217,7 @@ export type Database = {
       }
       daily_questions: {
         Row: {
+          contest_id: string | null
           correct_answers: number
           created_at: string
           id: string
@@ -228,6 +229,7 @@ export type Database = {
           wrong_answers: number
         }
         Insert: {
+          contest_id?: string | null
           correct_answers?: number
           created_at?: string
           id?: string
@@ -239,6 +241,7 @@ export type Database = {
           wrong_answers?: number
         }
         Update: {
+          contest_id?: string | null
           correct_answers?: number
           created_at?: string
           id?: string
@@ -250,6 +253,13 @@ export type Database = {
           wrong_answers?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "daily_questions_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "daily_questions_subject_id_fkey"
             columns: ["subject_id"]

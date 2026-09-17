@@ -36,7 +36,7 @@ export function FlashcardReviewNew({ flashcards, subjects, onReview }: Flashcard
     }, 300);
   };
 
-  if (flashcards.length === 0) {
+  if (!currentCard) {
     return (
       <Card className="p-12 text-center shadow-card animate-slide-up">
         <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">

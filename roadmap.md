@@ -7,3 +7,7 @@
 - [x] Mostrar ciclo/plano e dia atual no painel inicial.
 - [x] Validar tipos e testes automatizados.
 - [x] Vincular o Pomodoro ao concurso e separar suas horas nas estatísticas.
+- [x] Corrigir as disciplinas exibidas ao registrar questões por concurso.
+- [x] Vincular cada registro de questões ao concurso e separar as estatísticas.
+- [x] Mostrar desempenho por disciplina nos simulados filtrados.
+- [x] Validar os fluxos corrigidos.
