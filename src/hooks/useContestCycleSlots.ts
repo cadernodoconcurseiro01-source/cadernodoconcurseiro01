@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -34,13 +35,13 @@ export function useContestCycleSlots(contestId?: string) {
     },
   });
 
-  const overridesFor = (id: string) => {
+  const overridesFor = useCallback((id: string) => {
     const map = new Map<string, string>();
     slots
       .filter(s => s.contest_id === id)
       .forEach(s => map.set(slotKey(s.cycle_index, s.day_number, s.slot_index), s.subject_id));
     return map;
-  };
+  }, [slots]);
 
   const setSlot = useMutation({
     mutationFn: async (params: {
