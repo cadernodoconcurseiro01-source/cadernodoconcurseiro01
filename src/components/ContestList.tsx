@@ -104,7 +104,9 @@ export function ContestList({ contests, onEdit, onDelete }: ContestListProps) {
                       <Layers className="w-4 h-4" />
                     )}
                     <span>
-                      {contest.cycle_number || 1}º {contest.study_plan_type === 'cycle' ? 'Ciclo' : 'Plano'} • {contest.cycle_days || 7} dias
+                      {contest.cycle_number || 1}º {contest.study_plan_type === 'cycle' ? 'Ciclo' : 'Plano'}
+                      {' • '}Dia {contest.current_day || 1} de {contest.cycle_days || 7}
+                      {' • '}{contest.total_cycles || 1} no total
                     </span>
                   </div>
                 </div>
