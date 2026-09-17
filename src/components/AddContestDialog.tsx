@@ -108,6 +108,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
       setStudyPlanType('cycle');
       setCycleDays(7);
       setCycleNumber(1);
+      setTotalCycles(1);
+      setCurrentDay(1);
       setSubjectsPerDay(4);
       setStudyPeriods(['morning', 'afternoon', 'evening']);
     }
