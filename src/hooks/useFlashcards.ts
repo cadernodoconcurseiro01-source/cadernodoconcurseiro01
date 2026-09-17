@@ -1,9 +1,17 @@
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Flashcard } from '@/types/database';
 import { toast } from 'sonner';
 
-// SM-2 Algorithm implementation (Anki-style)
+const REVIEW_DELAYS_MS: Record<number, number> = {
+  1: 60 * 1000,
+  2: 6 * 60 * 1000,
+  4: 10 * 60 * 1000,
+  5: 4 * 24 * 60 * 60 * 1000,
+};
+
+// Learning steps shown in the review buttons, followed by spaced repetition.
 function calculateNextReview(
   quality: number, // 0-5 (0-2 = again, 3 = hard, 4 = good, 5 = easy)
   currentInterval: number,
@@ -19,29 +27,21 @@ function calculateNextReview(
   newEaseFactor = Math.max(1.3, newEaseFactor); // Minimum ease factor is 1.3
 
   if (quality < 3) {
-    // Failed - reset
     newRepetitions = 0;
-    newInterval = 1; // 1 day
-  } else {
-    // Passed
+    newInterval = currentInterval;
+  } else if (quality === 4) {
     newRepetitions = repetitions + 1;
-
-    if (newRepetitions === 1) {
-      newInterval = 1; // 1 day
-    } else if (newRepetitions === 2) {
-      newInterval = 6; // 6 days
-    } else {
-      newInterval = Math.round(currentInterval * newEaseFactor);
-    }
-
-    // Bonus for easy
-    if (quality === 5) {
-      newInterval = Math.round(newInterval * 1.3);
-    }
+    newInterval = currentInterval;
+  } else if (repetitions === 0) {
+    newRepetitions = 1;
+    newInterval = 4;
+  } else {
+    newRepetitions = repetitions + 1;
+    newInterval = Math.max(4, Math.round(currentInterval * newEaseFactor * 1.3));
   }
 
-  const nextReview = new Date();
-  nextReview.setDate(nextReview.getDate() + newInterval);
+  const delay = REVIEW_DELAYS_MS[quality] ?? REVIEW_DELAYS_MS[4];
+  const nextReview = new Date(Date.now() + delay);
 
   return {
     interval: newInterval,
@@ -53,6 +53,12 @@ function calculateNextReview(
 
 export function useFlashcards() {
   const queryClient = useQueryClient();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const { data: flashcards = [], isLoading } = useQuery({
     queryKey: ['flashcards'],
@@ -72,10 +78,7 @@ export function useFlashcards() {
   });
 
   const flashcardsDueToday = flashcards.filter(f => {
-    const nextReview = new Date(f.next_review);
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-    return nextReview <= today;
+    return new Date(f.next_review).getTime() <= now;
   });
 
   const addFlashcard = useMutation({
@@ -155,8 +158,8 @@ export function useFlashcards() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['flashcards'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['flashcards'] });
     },
     onError: (error) => {
       toast.error('Erro ao atualizar flashcard');

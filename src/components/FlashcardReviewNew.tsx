@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Flashcard, Subject } from '@/types/database';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 interface FlashcardReviewNewProps {
   flashcards: Flashcard[];
   subjects: Subject[];
-  onReview: (params: { id: string; quality: number }) => void;
+  onReview: (params: { id: string; quality: number }) => Promise<void>;
 }
 
 export function FlashcardReviewNew({ flashcards, subjects, onReview }: FlashcardReviewNewProps) {
@@ -19,21 +19,22 @@ export function FlashcardReviewNew({ flashcards, subjects, onReview }: Flashcard
   const currentCard = flashcards[currentIndex];
   const subject = subjects.find(s => s.id === currentCard?.subject_id);
 
-  const handleReview = (quality: number) => {
+  useEffect(() => {
+    if (currentIndex >= flashcards.length) {
+      setCurrentIndex(0);
+    }
+  }, [currentIndex, flashcards.length]);
+
+  const handleReview = async (quality: number) => {
     if (!currentCard) return;
     
     setIsAnimating(true);
-    onReview({ id: currentCard.id, quality });
-    
-    setTimeout(() => {
-      if (currentIndex < flashcards.length - 1) {
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        setCurrentIndex(0);
-      }
+    try {
+      await onReview({ id: currentCard.id, quality });
       setIsFlipped(false);
+    } finally {
       setIsAnimating(false);
-    }, 300);
+    }
   };
 
   if (!currentCard) {
@@ -136,7 +137,7 @@ export function FlashcardReviewNew({ flashcards, subjects, onReview }: Flashcard
           >
             <X className="w-4 h-4 mb-1" />
             <span className="text-xs">Errei</span>
-            <span className="text-[10px] opacity-60">&lt;1 min</span>
+            <span className="text-[10px] opacity-60">1 min</span>
           </Button>
           <Button 
             variant="outline" 
@@ -145,7 +146,7 @@ export function FlashcardReviewNew({ flashcards, subjects, onReview }: Flashcard
           >
             <AlertCircle className="w-4 h-4 mb-1" />
             <span className="text-xs">Difícil</span>
-            <span className="text-[10px] opacity-60">&lt;6 min</span>
+            <span className="text-[10px] opacity-60">6 min</span>
           </Button>
           <Button 
             variant="outline" 
@@ -154,7 +155,7 @@ export function FlashcardReviewNew({ flashcards, subjects, onReview }: Flashcard
           >
             <ThumbsUp className="w-4 h-4 mb-1" />
             <span className="text-xs">Bom</span>
-            <span className="text-[10px] opacity-60">&lt;10 min</span>
+            <span className="text-[10px] opacity-60">10 min</span>
           </Button>
           <Button 
             onClick={() => handleReview(5)}
