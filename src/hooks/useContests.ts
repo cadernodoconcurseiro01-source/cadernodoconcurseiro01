@@ -24,6 +24,8 @@ export function useContests() {
       return (data || []).map(item => ({
         ...item,
         study_plan_type: (item.study_plan_type === 'injected' ? 'plan' : item.study_plan_type) as StudyPlanType,
+        total_cycles: item.total_cycles ?? 1,
+        current_day: item.current_day ?? 1,
         study_periods: (item.study_periods || ['morning', 'afternoon', 'evening']) as StudyPeriod[],
       })) as Contest[];
     },
