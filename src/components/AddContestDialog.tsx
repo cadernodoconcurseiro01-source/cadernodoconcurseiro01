@@ -37,7 +37,9 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
 
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
-  const setIsOpen = isControlled ? onOpenChange! : setInternalOpen;
+  const setIsOpen = isControlled
+    ? (nextOpen: boolean) => onOpenChange?.(nextOpen)
+    : setInternalOpen;
 
   useEffect(() => {
     if (editingContest) {

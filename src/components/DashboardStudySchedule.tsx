@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Sun, Sunset, Moon, ArrowUp, ArrowRight, ArrowDown, Trophy, HelpCircle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Subject, Contest, StudyScheduleItem, DifficultyLevel } from '@/types/database';
+import { Subject, Contest, StudyScheduleItem } from '@/types/database';
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
