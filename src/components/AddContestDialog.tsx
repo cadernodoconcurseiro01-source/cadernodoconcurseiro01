@@ -30,6 +30,8 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
   const [studyPlanType, setStudyPlanType] = useState<StudyPlanType>('cycle');
   const [cycleDays, setCycleDays] = useState(7);
   const [cycleNumber, setCycleNumber] = useState(1);
+  const [totalCycles, setTotalCycles] = useState(1);
+  const [currentDay, setCurrentDay] = useState(1);
   const [subjectsPerDay, setSubjectsPerDay] = useState(4);
   const [studyPeriods, setStudyPeriods] = useState<StudyPeriod[]>(['morning', 'afternoon', 'evening']);
 
