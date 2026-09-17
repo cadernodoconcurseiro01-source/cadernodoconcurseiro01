@@ -72,12 +72,16 @@ export function AddContestDialog({ onAdd, editingContest, onUpdate, open, onOpen
 
     try {
       const safeStudyPlanType: StudyPlanType = studyPlanType === 'plan' ? 'plan' : 'cycle';
+      const safeCycleDays = Math.max(1, cycleDays || 7);
+      const safeTotalCycles = Math.max(1, totalCycles || 1);
       const contestData = {
         name: name.trim(),
         exam_date: examDate || null,
         study_plan_type: safeStudyPlanType,
-        cycle_days: Math.max(1, cycleDays || 7),
-        cycle_number: Math.max(1, cycleNumber || 1),
+        cycle_days: safeCycleDays,
+        cycle_number: Math.min(Math.max(1, cycleNumber || 1), safeTotalCycles),
+        total_cycles: safeTotalCycles,
+        current_day: Math.min(Math.max(1, currentDay || 1), safeCycleDays),
         subjects_per_day: Math.max(1, subjectsPerDay || 4),
         study_periods: studyPeriods,
         is_active: true,
