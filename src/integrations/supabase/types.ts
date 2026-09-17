@@ -496,6 +496,7 @@ export type Database = {
       }
       study_sessions: {
         Row: {
+          contest_id: string | null
           created_at: string
           duration: number
           end_time: string | null
@@ -506,6 +507,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          contest_id?: string | null
           created_at?: string
           duration: number
           end_time?: string | null
@@ -516,6 +518,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          contest_id?: string | null
           created_at?: string
           duration?: number
           end_time?: string | null
@@ -526,6 +529,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "study_sessions_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "study_sessions_subject_id_fkey"
             columns: ["subject_id"]

@@ -15,6 +15,7 @@ interface PersistedState {
   isRunning: boolean;
   endsAt: number | null;        // epoch ms when current run will hit 0
   remainingMs: number;          // when paused, time left
+  selectedContest: string;
   selectedSubject: string;
   completedPomodoros: number;
   totalSeconds: number;         // duration of current cycle
@@ -25,10 +26,12 @@ interface TimerContextValue {
   mode: TimerMode;
   isRunning: boolean;
   timeLeft: number;             // seconds
+  selectedContest: string;
   selectedSubject: string;
   completedPomodoros: number;
   totalSeconds: number;
   setMode: (m: TimerMode) => void;
+  setSelectedContest: (id: string) => void;
   setSelectedSubject: (id: string) => void;
   toggle: () => void;
   reset: () => void;
@@ -65,7 +68,7 @@ function playBeeps(count = 3) {
 interface ProviderProps {
   children: ReactNode;
   settings: TimerSettings;
-  onSessionComplete?: (subjectId: string, durationMinutes: number) => void;
+  onSessionComplete?: (contestId: string, subjectId: string, durationMinutes: number) => void;
 }
 
 function loadPersisted(): PersistedState | null {
@@ -95,6 +98,9 @@ export function TimerProvider({ children, settings, onSessionComplete }: Provide
   );
   const [totalSeconds, setTotalSeconds] = useState<number>(
     persisted?.totalSeconds ?? durations.focus
+  );
+  const [selectedContest, setSelectedContestState] = useState<string>(
+    persisted?.selectedContest ?? ''
   );
   const [selectedSubject, setSelectedSubjectState] = useState<string>(
     persisted?.selectedSubject ?? ''
@@ -129,6 +135,7 @@ export function TimerProvider({ children, settings, onSessionComplete }: Provide
       isRunning,
       endsAt,
       remainingMs,
+      selectedContest,
       selectedSubject,
       completedPomodoros,
       totalSeconds,
@@ -137,7 +144,7 @@ export function TimerProvider({ children, settings, onSessionComplete }: Provide
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {}
-  }, [mode, isRunning, endsAt, remainingMs, selectedSubject, completedPomodoros, totalSeconds]);
+  }, [mode, isRunning, endsAt, remainingMs, selectedContest, selectedSubject, completedPomodoros, totalSeconds]);
 
   // Handle completion
   useEffect(() => {
@@ -156,8 +163,8 @@ export function TimerProvider({ children, settings, onSessionComplete }: Provide
 
     try {
       if (mode === 'focus') {
-        if (selectedSubject) {
-          onSessionCompleteRef.current?.(selectedSubject, settings?.focus_duration || 25);
+        if (selectedContest && selectedSubject) {
+          onSessionCompleteRef.current?.(selectedContest, selectedSubject, settings?.focus_duration || 25);
         }
         const next = completedPomodoros + 1;
         setCompletedPomodoros(next);
@@ -182,7 +189,7 @@ export function TimerProvider({ children, settings, onSessionComplete }: Provide
       console.error('Timer completion error:', e);
       toast.error('Ocorreu um erro ao completar o timer');
     }
-  }, [timeLeftMs, isRunning, endsAt, mode, selectedSubject, completedPomodoros, settings]);
+  }, [timeLeftMs, isRunning, endsAt, mode, selectedContest, selectedSubject, completedPomodoros, settings]);
 
   const setMode = useCallback(
     (m: TimerMode) => {
@@ -201,6 +208,10 @@ export function TimerProvider({ children, settings, onSessionComplete }: Provide
     },
     [settings]
   );
+
+  const setSelectedContest = useCallback((id: string) => {
+    setSelectedContestState(id);
+  }, []);
 
   const setSelectedSubject = useCallback((id: string) => {
     setSelectedSubjectState(id);
@@ -259,10 +270,12 @@ export function TimerProvider({ children, settings, onSessionComplete }: Provide
         mode,
         isRunning,
         timeLeft,
+        selectedContest,
         selectedSubject,
         completedPomodoros,
         totalSeconds,
         setMode,
+        setSelectedContest,
         setSelectedSubject,
         toggle,
         reset,

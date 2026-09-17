@@ -1,17 +1,11 @@
 import { Clock } from 'lucide-react';
 import { PomodoroTimerNew } from '@/components/PomodoroTimerNew';
 import { useSubjects } from '@/hooks/useSubjects';
-import { useSessions } from '@/hooks/useSessions';
 import { useTimerSettings } from '@/hooks/useTimerSettings';
 
 const PomodoroPage = () => {
   const { subjects } = useSubjects();
-  const { addSession } = useSessions();
   const { settings, updateSettings } = useTimerSettings();
-
-  const handleSessionComplete = (subjectId: string, duration: number) => {
-    addSession({ subjectId, duration, type: 'pomodoro' });
-  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -28,7 +22,6 @@ const PomodoroPage = () => {
       <PomodoroTimerNew 
         subjects={subjects}
         settings={settings}
-        onSessionComplete={handleSessionComplete}
         onSettingsChange={updateSettings}
       />
     </div>

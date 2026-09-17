@@ -57,10 +57,12 @@ export function useSessions() {
 
   const addSession = useMutation({
     mutationFn: async ({ 
+      contestId,
       subjectId, 
       duration, 
       type = 'pomodoro' 
     }: { 
+      contestId?: string;
       subjectId: string; 
       duration: number; 
       type?: 'pomodoro' | 'free' | 'flashcard';
@@ -75,6 +77,7 @@ export function useSessions() {
         .from('study_sessions')
         .insert({
           user_id: user.id,
+          contest_id: contestId ?? null,
           subject_id: subjectId,
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),

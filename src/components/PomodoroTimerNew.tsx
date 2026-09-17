@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Play, Pause, RotateCcw, Coffee, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,6 +10,8 @@ import { Subject } from '@/types/database';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTimer, TimerMode } from '@/contexts/TimerContext';
+import { useContests } from '@/hooks/useContests';
+import { useContestSubjects } from '@/hooks/useContestSubjects';
 
 interface TimerSettings {
   focus_duration: number;
@@ -21,7 +23,6 @@ interface TimerSettings {
 interface PomodoroTimerProps {
   subjects: Subject[];
   settings: TimerSettings;
-  onSessionComplete?: (subjectId: string, duration: number) => void;
   onSettingsChange: (settings: Partial<TimerSettings>) => void;
 }
 
@@ -34,10 +35,12 @@ export function PomodoroTimerNew({
     mode,
     isRunning,
     timeLeft,
+    selectedContest,
     selectedSubject,
     completedPomodoros,
     totalSeconds,
     setMode,
+    setSelectedContest,
     setSelectedSubject,
     toggle,
     reset,
@@ -45,17 +48,33 @@ export function PomodoroTimerNew({
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
+  const { contests } = useContests();
+  const { mappings } = useContestSubjects();
+
+  const contestSubjects = useMemo(() => {
+    if (!selectedContest) return [];
+    const linkedIds = new Set(
+      mappings.filter(mapping => mapping.contest_id === selectedContest).map(mapping => mapping.subject_id)
+    );
+    return subjects.filter(subject => subject.contest_id === selectedContest || linkedIds.has(subject.id));
+  }, [mappings, selectedContest, subjects]);
 
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
 
-  // Initialize subject from props if none selected
+  // Keep the selections valid when contests or their linked subjects change.
   useEffect(() => {
-    if (subjects.length > 0 && !selectedSubject) {
-      setSelectedSubject(subjects[0].id);
+    if (contests.length > 0 && !contests.some(contest => contest.id === selectedContest)) {
+      setSelectedContest(contests[0].id);
     }
-  }, [subjects, selectedSubject, setSelectedSubject]);
+  }, [contests, selectedContest, setSelectedContest]);
+
+  useEffect(() => {
+    if (!contestSubjects.some(subject => subject.id === selectedSubject)) {
+      setSelectedSubject(contestSubjects[0]?.id ?? '');
+    }
+  }, [contestSubjects, selectedSubject, setSelectedSubject]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -188,26 +207,49 @@ export function PomodoroTimerNew({
           ))}
         </div>
 
-        {/* Subject Selector */}
-        {mode === 'focus' && subjects.length > 0 && (
-          <Select value={selectedSubject || undefined} onValueChange={setSelectedSubject}>
-            <SelectTrigger className="w-48 mx-auto">
-              <SelectValue placeholder="Selecione a matéria" />
-            </SelectTrigger>
-            <SelectContent>
-              {subjects.map((subject) => (
-                <SelectItem key={subject.id} value={subject.id}>
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: subject.color }}
-                    />
-                    {subject.name}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Contest and subject selectors */}
+        {mode === 'focus' && (
+          <div className="mx-auto grid w-full max-w-xs gap-3">
+            <Select
+              value={selectedContest || undefined}
+              onValueChange={setSelectedContest}
+              disabled={isRunning || contests.length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o concurso" />
+              </SelectTrigger>
+              <SelectContent>
+                {contests.map(contest => (
+                  <SelectItem key={contest.id} value={contest.id}>{contest.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={selectedSubject || undefined}
+              onValueChange={setSelectedSubject}
+              disabled={isRunning || !selectedContest || contestSubjects.length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a disciplina" />
+              </SelectTrigger>
+              <SelectContent>
+                {contestSubjects.map((subject) => (
+                  <SelectItem key={subject.id} value={subject.id}>
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: subject.color }}
+                      />
+                      {subject.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedContest && contestSubjects.length === 0 && (
+              <p className="text-xs text-muted-foreground">Este concurso ainda não possui disciplinas vinculadas.</p>
+            )}
+          </div>
         )}
 
         {/* Timer Display */}
@@ -260,7 +302,13 @@ export function PomodoroTimerNew({
           </Button>
 
           <Button
-            onClick={toggle}
+            onClick={() => {
+              if (mode === 'focus' && (!selectedContest || !selectedSubject)) {
+                toast.error('Selecione o concurso e a disciplina');
+                return;
+              }
+              toggle();
+            }}
             className={cn(
               "w-16 h-16 rounded-full transition-all duration-300",
               isRunning ? "gradient-warm" : "gradient-primary"
