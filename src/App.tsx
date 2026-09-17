@@ -71,9 +71,9 @@ function AuthedShell() {
   const { settings } = useTimerSettings();
   const { addSession } = useSessions();
 
-  const handleSessionComplete = (subjectId: string, duration: number) => {
+  const handleSessionComplete = (contestId: string, subjectId: string, duration: number) => {
     try {
-      addSession({ subjectId, duration, type: 'pomodoro' });
+      addSession({ contestId, subjectId, duration, type: 'pomodoro' });
     } catch (e) {
       console.error('session complete error', e);
     }

@@ -46,11 +46,11 @@ const StatisticsPage = () => {
 
   const filteredSubjectIds = useMemo(() => new Set(filteredSubjects.map(s => s.id)), [filteredSubjects]);
 
-  // Filter sessions by subjects in the selected contest
+  // Pomodoro sessions carry their contest explicitly so shared subjects are never counted twice.
   const filteredSessions = useMemo(() => {
     if (selectedContestId === ALL_CONTESTS_VALUE) return sessions;
-    return sessions.filter(s => filteredSubjectIds.has(s.subject_id));
-  }, [sessions, selectedContestId, filteredSubjectIds]);
+    return sessions.filter(s => s.contest_id === selectedContestId);
+  }, [sessions, selectedContestId]);
 
   // Filter simulados by contest
   const filteredSimulados = useMemo(() => {

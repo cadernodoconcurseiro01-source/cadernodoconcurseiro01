@@ -21,7 +21,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { subjects, isLoading: subjectsLoading, addSubject, updateSubject, deleteSubject } = useSubjects();
-  const { getStats, addSession } = useSessions();
+  const { getStats } = useSessions();
   const { flashcardsDueToday } = useFlashcards();
   const { settings, updateSettings } = useTimerSettings();
   
@@ -37,14 +37,6 @@ const Dashboard = () => {
       return `${hours}h ${mins}m`;
     }
     return `${mins}min`;
-  };
-
-  const handleSessionComplete = (subjectId: string, duration: number) => {
-    try {
-      addSession({ subjectId, duration, type: 'pomodoro' });
-    } catch (error) {
-      console.error('Error adding session:', error);
-    }
   };
 
   const handleEditSubject = (subject: Subject) => {
@@ -143,7 +135,6 @@ const Dashboard = () => {
           <PomodoroTimerNew 
             subjects={subjects} 
             settings={settings}
-            onSessionComplete={handleSessionComplete}
             onSettingsChange={updateSettings}
           />
         </section>

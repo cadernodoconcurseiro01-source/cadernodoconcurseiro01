@@ -28,6 +28,7 @@ export interface Subject {
 export interface StudySession {
   id: string;
   user_id: string;
+  contest_id: string | null;
   subject_id: string;
   start_time: string;
   end_time: string | null;

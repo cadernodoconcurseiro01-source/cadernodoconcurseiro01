@@ -6,3 +6,4 @@
 - [x] Permitir trocar matérias individualmente e restaurar o padrão.
 - [x] Mostrar ciclo/plano e dia atual no painel inicial.
 - [x] Validar tipos e testes automatizados.
+- [x] Vincular o Pomodoro ao concurso e separar suas horas nas estatísticas.
