@@ -77,6 +77,57 @@ export type Database = {
         }
         Relationships: []
       }
+      contest_cycle_slots: {
+        Row: {
+          contest_id: string
+          created_at: string
+          cycle_index: number
+          day_number: number
+          id: string
+          slot_index: number
+          subject_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string
+          cycle_index: number
+          day_number: number
+          id?: string
+          slot_index: number
+          subject_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string
+          cycle_index?: number
+          day_number?: number
+          id?: string
+          slot_index?: number
+          subject_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contest_cycle_slots_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contest_cycle_slots_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contest_subjects: {
         Row: {
           contest_id: string
@@ -116,6 +167,7 @@ export type Database = {
       contests: {
         Row: {
           created_at: string
+          current_day: number
           cycle_days: number
           cycle_number: number
           exam_date: string | null
@@ -125,11 +177,13 @@ export type Database = {
           study_periods: string[]
           study_plan_type: string
           subjects_per_day: number
+          total_cycles: number
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          current_day?: number
           cycle_days?: number
           cycle_number?: number
           exam_date?: string | null
@@ -139,11 +193,13 @@ export type Database = {
           study_periods?: string[]
           study_plan_type?: string
           subjects_per_day?: number
+          total_cycles?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          current_day?: number
           cycle_days?: number
           cycle_number?: number
           exam_date?: string | null
@@ -153,6 +209,7 @@ export type Database = {
           study_periods?: string[]
           study_plan_type?: string
           subjects_per_day?: number
+          total_cycles?: number
           updated_at?: string
           user_id?: string
         }
