@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { OAUTH_RETURN_PATH_KEY, sanitizeReturnPath } from '@/pages/AuthCallback';
 
 interface AuthContextType {
   user: User | null;
@@ -11,7 +12,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (returnPath?: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -104,17 +105,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null };
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (returnPath?: string) => {
     try {
+      const destination = sanitizeReturnPath(returnPath);
+      sessionStorage.setItem(OAUTH_RETURN_PATH_KEY, destination);
+
       const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: `${window.location.origin}/`,
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
 
       if (result.error) {
+        sessionStorage.removeItem(OAUTH_RETURN_PATH_KEY);
         toast.error('Erro ao fazer login com Google');
         console.error('Google auth error:', result.error);
+        return;
+      }
+
+      if (result.redirected) return;
+
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        sessionStorage.removeItem(OAUTH_RETURN_PATH_KEY);
+        navigate(destination, { replace: true });
       }
     } catch (error) {
+      sessionStorage.removeItem(OAUTH_RETURN_PATH_KEY);
       toast.error('Erro ao fazer login com Google');
       console.error('Google auth error:', error);
     }

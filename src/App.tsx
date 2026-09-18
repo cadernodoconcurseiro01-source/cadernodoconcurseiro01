@@ -20,6 +20,7 @@ import VersePage from "./pages/Verse";
 import CalendarPage from "./pages/CalendarPage";
 import ProfilePage from "./pages/Profile";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import { toast } from "sonner";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
@@ -58,6 +59,7 @@ function AppRoutes() {
       ) : (
         <main>
           <Routes>
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<Auth />} />
           </Routes>
@@ -84,6 +86,7 @@ function AuthedShell() {
       <NavigationNew />
       <main>
         <Routes>
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/auth" element={<Auth />} />
           <Route 
             path="/" 
