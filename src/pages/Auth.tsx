@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,7 +24,6 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp, signInWithGoogle } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const loginForm = useForm<AuthFormData>({
@@ -69,7 +68,10 @@ const Auth = () => {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    await signInWithGoogle();
+    const requestedPath = location.state?.from
+      ? `${location.state.from.pathname ?? ''}${location.state.from.search ?? ''}${location.state.from.hash ?? ''}`
+      : '/';
+    await signInWithGoogle(requestedPath);
     setIsLoading(false);
   };
 
