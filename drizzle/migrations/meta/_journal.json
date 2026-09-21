@@ -29,6 +29,13 @@
       "when": 1789608167739,
       "tag": "0003_link_daily_questions_to_contests",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789955435182,
+      "tag": "0004_create_ai_mentor_chat",
+      "breakpoints": true
     }
   ]
 }
