@@ -18,6 +18,8 @@ import SimuladosPage from "./pages/Simulados";
 import StatisticsPage from "./pages/Statistics";
 import VersePage from "./pages/Verse";
 import CalendarPage from "./pages/CalendarPage";
+import MentorList from "./pages/MentorList";
+import MentorThread from "./pages/MentorThread";
 import ProfilePage from "./pages/Profile";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
@@ -168,6 +170,8 @@ function AuthedShell() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/mentor" element={<ProtectedRoute><MentorList /></ProtectedRoute>} />
+          <Route path="/mentor/:threadId" element={<ProtectedRoute><MentorThread /></ProtectedRoute>} />
           <Route 
             path="/verse" 
             element={
