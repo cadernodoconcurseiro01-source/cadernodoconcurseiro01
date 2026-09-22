@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Timer, BookOpen, Layers, LogOut, User, Trophy, FileText, BarChart3, HelpCircle, Book, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, Timer, BookOpen, Layers, LogOut, User, Trophy, FileText, BarChart3, HelpCircle, Book, CalendarDays, BrainCircuit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,6 +19,7 @@ const navItems = [
   { path: '/simulados', label: 'Simulados', icon: FileText },
   { path: '/statistics', label: 'Estatísticas', icon: BarChart3 },
   { path: '/calendar', label: 'Calendário', icon: CalendarDays },
+  { path: '/mentor', label: 'Mentor IA', icon: BrainCircuit },
   { path: '/verse', label: 'Versículo', icon: Book },
 ];
 
@@ -62,7 +63,7 @@ export function NavigationNew() {
           {/* Nav Links */}
           <div className="flex items-center gap-1 overflow-x-auto">
             {navItems.map(({ path, label, icon: Icon }) => {
-              const isActive = location.pathname === path;
+              const isActive = path === '/mentor' ? location.pathname.startsWith('/mentor') : location.pathname === path;
               
               return (
                 <Link
