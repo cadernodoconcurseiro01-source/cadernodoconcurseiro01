@@ -3,16 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-
-export const OAUTH_RETURN_PATH_KEY = 'oauth_return_path';
-
-export function sanitizeReturnPath(path: string | null | undefined) {
-  if (!path || !path.startsWith('/') || path.startsWith('//') || path === '/auth' || path.startsWith('/auth/callback')) {
-    return '/';
-  }
-
-  return path;
-}
+import { OAUTH_RETURN_PATH_KEY, sanitizeReturnPath } from '@/lib/auth-utils';
 
 const AuthCallback = () => {
   const navigate = useNavigate();

@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { OAUTH_RETURN_PATH_KEY, sanitizeReturnPath } from '@/pages/AuthCallback';
+import { OAUTH_RETURN_PATH_KEY, sanitizeReturnPath } from '@/lib/auth-utils';
 
 interface AuthContextType {
   user: User | null;

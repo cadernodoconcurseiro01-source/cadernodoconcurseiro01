@@ -148,3 +148,23 @@ export interface DailyQuestion {
   created_at: string;
   updated_at: string;
 }
+
+export interface AIChatThread {
+  id: string;
+  user_id: string;
+  title: string;
+  contest_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AIChatMessage {
+  id: string;
+  thread_id: string;
+  user_id: string;
+  sdk_message_id: string;
+  role: 'user' | 'assistant' | 'system';
+  parts: unknown[];
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
