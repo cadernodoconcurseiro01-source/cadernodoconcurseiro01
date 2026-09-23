@@ -15,6 +15,7 @@ import { Message, MessageContent, MessageResponse } from '@/components/ai-elemen
 import { PromptInput, PromptInputFooter, PromptInputSubmit, PromptInputTextarea } from '@/components/ai-elements/prompt-input';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { toast } from 'sonner';
+import logo from '@/assets/logo.png';
 
 const NO_CONTEST = '__none__';
 const quickPrompts = [
@@ -95,7 +96,8 @@ type MentorChatProps = {
 
 const MentorChat = ({ threadId, initialMessages, initialContestId, title, contests, accessToken, onBack, onChanged }: MentorChatProps) => {
   const [contestId, setContestId] = useState(initialContestId ?? NO_CONTEST);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const composerRef = useRef<HTMLDivElement | null>(null);
+  const focusComposer = () => composerRef.current?.querySelector('textarea')?.focus();
   const endpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mentor-chat`;
   const transport = useMemo(() => new DefaultChatTransport({
     api: endpoint,
@@ -111,16 +113,16 @@ const MentorChat = ({ threadId, initialMessages, initialContestId, title, contes
     transport,
     onFinish: () => {
       onChanged();
-      window.setTimeout(() => textareaRef.current?.focus(), 0);
+      window.setTimeout(focusComposer, 0);
     },
     onError: (chatError) => {
       toast.error(chatError.message || 'Não foi possível obter a resposta do mentor.');
-      window.setTimeout(() => textareaRef.current?.focus(), 0);
+      window.setTimeout(focusComposer, 0);
     },
   });
   const busy = status === 'submitted' || status === 'streaming';
 
-  useEffect(() => { textareaRef.current?.focus(); }, []);
+  useEffect(() => { focusComposer(); }, []);
 
   const changeContest = async (value: string) => {
     setContestId(value);
@@ -141,7 +143,7 @@ const MentorChat = ({ threadId, initialMessages, initialContestId, title, contes
     const cleanText = text.trim();
     if (!cleanText || busy) return;
     await sendMessage({ text: cleanText });
-    window.setTimeout(() => textareaRef.current?.focus(), 0);
+    window.setTimeout(focusComposer, 0);
   };
 
   return (
@@ -166,8 +168,8 @@ const MentorChat = ({ threadId, initialMessages, initialContestId, title, contes
       <Conversation className="min-h-0">
         <ConversationContent className="mx-auto w-full max-w-3xl px-0 py-6">
           {messages.length === 0 ? (
-            <ConversationEmptyState className="min-h-[22rem]" icon={<img src="/src/assets/logo.png" alt="" className="h-14 w-auto" />}>
-              <BrainCircuit className="h-10 w-10 text-primary" />
+            <ConversationEmptyState className="min-h-[22rem]">
+              <img src={logo} alt="Caderno do Concurseiro 01" className="h-14 w-auto" />
               <h2 className="font-display text-2xl font-semibold">Como posso orientar sua preparação?</h2>
               <p className="max-w-lg text-sm text-muted-foreground">Escolha um ponto de partida ou descreva sua dúvida.</p>
               <div className="mt-5 grid w-full max-w-2xl grid-cols-1 gap-2 sm:grid-cols-2">
@@ -197,9 +199,9 @@ const MentorChat = ({ threadId, initialMessages, initialContestId, title, contes
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="mx-auto w-full max-w-3xl border-t pt-3">
+      <div ref={composerRef} className="mx-auto w-full max-w-3xl border-t pt-3">
         <PromptInput onSubmit={({ text }) => submitText(text)}>
-          <PromptInputTextarea ref={textareaRef} placeholder="Pergunte sobre plano, ciclo, revisão ou envie uma questão..." disabled={busy} />
+          <PromptInputTextarea placeholder="Pergunte sobre plano, ciclo, revisão ou envie uma questão..." disabled={busy} />
           <PromptInputFooter className="justify-end">
             <PromptInputSubmit status={status} onStop={stop} disabled={!busy && status !== 'ready'} />
           </PromptInputFooter>

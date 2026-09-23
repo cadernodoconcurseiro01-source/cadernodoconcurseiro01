@@ -12,6 +12,6 @@
 - [x] Mostrar desempenho por disciplina nos simulados filtrados.
 - [x] Validar os fluxos corrigidos.
 - [x] Corrigir o retorno do Google para capturar a sessão sem loop de login.
-- [ ] Adicionar o Mentor IA especializado em concursos com conversas privadas.
-- [ ] Integrar contexto de concursos e matérias nas respostas do mentor.
+- [x] Adicionar o Mentor IA especializado em concursos com conversas privadas.
+- [x] Integrar contexto de concursos e matérias nas respostas do mentor.
 - [ ] Validar streaming, histórico, isolamento e restauração das conversas.
