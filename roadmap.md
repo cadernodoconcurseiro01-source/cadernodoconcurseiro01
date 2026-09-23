@@ -14,4 +14,4 @@
 - [x] Corrigir o retorno do Google para capturar a sessão sem loop de login.
 - [x] Adicionar o Mentor IA especializado em concursos com conversas privadas.
 - [x] Integrar contexto de concursos e matérias nas respostas do mentor.
-- [ ] Validar streaming, histórico, isolamento e restauração das conversas.
+- [x] Validar streaming, histórico, isolamento e restauração das conversas.
