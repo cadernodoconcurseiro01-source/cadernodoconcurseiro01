@@ -23,6 +23,8 @@ import MentorThread from "./pages/MentorThread";
 import ProfilePage from "./pages/Profile";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { toast } from "sonner";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
@@ -48,6 +50,9 @@ function AppRoutes() {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
+
+  if (window.location.pathname === '/reset-password') return <ResetPassword />;
+  if (window.location.pathname === '/forgot-password') return <ForgotPassword />;
 
   // Redirect authenticated users away from auth page
   if (!loading && user && window.location.pathname === '/auth') {

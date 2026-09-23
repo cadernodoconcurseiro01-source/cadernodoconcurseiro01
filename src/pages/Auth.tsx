@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -152,6 +152,12 @@ const Auth = () => {
                     </FormItem>
                   )}
                 />
+
+                <div className="flex justify-end">
+                  <Button asChild variant="link" className="h-auto px-0 text-sm">
+                    <Link to="/forgot-password">Esqueceu a senha?</Link>
+                  </Button>
+                </div>
 
                 <Button type="submit" className="w-full gradient-primary" disabled={isLoading}>
                   {isLoading ? 'Entrando...' : 'Entrar'}

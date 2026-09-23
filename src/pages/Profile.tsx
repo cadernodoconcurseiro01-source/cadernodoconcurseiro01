@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Camera, Mail, Calendar, Save, Loader2 } from 'lucide-react';
+import { User, Camera, Mail, Calendar, Save, Loader2, LockKeyhole } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,12 @@ const ProfilePage = () => {
   const resolvedAvatarUrl = useAvatarUrl(avatarPath);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [updatingEmail, setUpdatingEmail] = useState(false);
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -87,6 +93,50 @@ const ProfilePage = () => {
       toast.error('Erro ao salvar perfil');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEmailChange = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!newEmail.trim() || newEmail.trim() === user?.email) return;
+    try {
+      setUpdatingEmail(true);
+      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() }, { emailRedirectTo: `${window.location.origin}/profile` });
+      if (error) throw error;
+      setNewEmail('');
+      toast.success('Confirme a alteração nos e-mails enviados.');
+    } catch (error) {
+      console.error('Email update error:', error);
+      toast.error('Não foi possível alterar o e-mail.');
+    } finally {
+      setUpdatingEmail(false);
+    }
+  };
+
+  const handlePasswordChange = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error('A nova senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('As novas senhas não coincidem.');
+      return;
+    }
+    try {
+      setUpdatingPassword(true);
+      const credentials = { password: newPassword, current_password: currentPassword } as Parameters<typeof supabase.auth.updateUser>[0];
+      const { error } = await supabase.auth.updateUser(credentials);
+      if (error) throw error;
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      toast.success('Senha alterada com sucesso.');
+    } catch (error) {
+      console.error('Password update error:', error);
+      toast.error('Não foi possível alterar a senha. Verifique a senha atual.');
+    } finally {
+      setUpdatingPassword(false);
     }
   };
 
@@ -185,9 +235,7 @@ const ProfilePage = () => {
                 className="pl-10 bg-muted"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              O email não pode ser alterado
-            </p>
+            <p className="text-xs text-muted-foreground">E-mail atual da conta</p>
           </div>
 
           <div className="space-y-2">
@@ -217,6 +265,28 @@ const ProfilePage = () => {
           </Button>
         </div>
       </Card>
+
+      <section className="mt-6 grid gap-6 md:grid-cols-2">
+        <Card className="p-6">
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Mail className="h-5 w-5 text-primary" />Alterar e-mail</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Você receberá uma confirmação para concluir a alteração.</p>
+          <form onSubmit={handleEmailChange} className="mt-5 space-y-4">
+            <div className="space-y-2"><Label htmlFor="new-email">Novo e-mail</Label><Input id="new-email" type="email" value={newEmail} onChange={(event) => setNewEmail(event.target.value)} autoComplete="email" required /></div>
+            <Button type="submit" className="w-full" disabled={updatingEmail}>{updatingEmail ? 'Enviando...' : 'Alterar e-mail'}</Button>
+          </form>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><LockKeyhole className="h-5 w-5 text-primary" />Alterar senha</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Informe sua senha atual para confirmar.</p>
+          <form onSubmit={handlePasswordChange} className="mt-5 space-y-4">
+            <div className="space-y-2"><Label htmlFor="current-password">Senha atual</Label><Input id="current-password" type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} autoComplete="current-password" required /></div>
+            <div className="space-y-2"><Label htmlFor="profile-new-password">Nova senha</Label><Input id="profile-new-password" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} autoComplete="new-password" minLength={6} required /></div>
+            <div className="space-y-2"><Label htmlFor="profile-confirm-password">Confirmar nova senha</Label><Input id="profile-confirm-password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" minLength={6} required /></div>
+            <Button type="submit" className="w-full" disabled={updatingPassword}>{updatingPassword ? 'Alterando...' : 'Alterar senha'}</Button>
+          </form>
+        </Card>
+      </section>
     </div>
   );
 };
