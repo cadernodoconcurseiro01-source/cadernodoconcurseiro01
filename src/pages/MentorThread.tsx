@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
-import { ArrowLeft, BrainCircuit, CalendarRange, CircleHelp, ListChecks, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, CalendarRange, CircleHelp, ListChecks, RefreshCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useContests } from '@/hooks/useContests';
